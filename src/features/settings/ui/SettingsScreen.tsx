@@ -13,6 +13,7 @@ import { colors } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/shared/config/settingsStore";
+import { router } from "expo-router";
 
 type RowProps = {
   icon: string;
@@ -88,14 +89,23 @@ function SettingGroup({ children }: GroupProps) {
 export function SettingsScreen() {
   const { tokens, mode, toggle } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user, signOut } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const signOut = useAuthStore((state) => state.signOut);
+
   const { t } = useTranslation();
   const { language, setLanguage } = useSettingsStore();
 
   const handleSignOut = () => {
     Alert.alert(t("auth.logout"), t("auth.logout_confirm"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("auth.logout"), style: "destructive", onPress: signOut },
+      {
+        text: t("auth.logout"),
+        style: "destructive",
+        onPress: () => {
+          signOut();
+          router.replace("/(app)/vault");
+        },
+      },
     ]);
   };
 
@@ -209,12 +219,6 @@ export function SettingsScreen() {
                 thumbColor="#fff"
               />
             }
-          />
-          <SettingRow
-            icon="🔑"
-            iconBg="#8B5CF622"
-            title={t("settings.master_password")}
-            onPress={() => {}}
           />
         </SettingGroup>
 

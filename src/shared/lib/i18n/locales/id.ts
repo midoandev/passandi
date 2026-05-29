@@ -79,4 +79,33 @@ export default {
     delete_confirm:
       "Akun dan seluruh data kamu akan dihapus selamanya. Tindakan ini tidak dapat dibatalkan.",
   },
+  security: {
+    step_of: "Langkah {{current}} dari {{total}}",
+    master_password_title: "Buat Master Password",
+    master_password_subtitle:
+      "Kata sandi utama untuk mengunci seluruh datamu. Jangan sampai lupa.",
+    master_password_label: "Master Password",
+    master_password_confirm: "Konfirmasi Master Password",
+    master_placeholder: "Minimal 8 karakter",
+    master_confirm_placeholder: "Ulangi master password",
+    strength_weak: "Lemah",
+    strength_fair: "Cukup",
+    strength_good: "Kuat",
+    strength_strong: "Sangat Kuat",
+    btn_continue: "Lanjutkan →",
+    error_empty: "Semua field wajib diisi.",
+    error_min_length: "Minimal 8 karakter.",
+    error_not_match: "Kata sandi tidak cocok.",
+
+    pin_title: "Buat PIN 6 Digit",
+    pin_subtitle: "Untuk masuk lebih cepat setiap harinya",
+    pin_confirm_title: "Konfirmasi PIN",
+    pin_confirm_subtitle: "Masukkan ulang PIN kamu",
+    pin_error_not_match: "PIN tidak cocok. Coba lagi.",
+
+    success_title: "Siap!",
+    success_subtitle:
+      "Akun kamu sudah terlindungi. Selamat datang di Passandi.",
+    btn_enter_vault: "Masuk ke Brankas",
+  },
 } as const;

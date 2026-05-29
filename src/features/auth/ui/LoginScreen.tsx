@@ -17,8 +17,7 @@ import { AppButton } from "@/shared/ui/AppButton";
 import { colors } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useTranslation } from "react-i18next";
-import { router} from "expo-router";
-
+import { router } from "expo-router";
 
 export function LoginScreen() {
   const { tokens, toggle, mode } = useTheme();
@@ -28,16 +27,21 @@ export function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { signInEmail, signUpEmail, signInGoogle, loading, error, clearError } =
-    useAuthStore();
+  const signInEmail = useAuthStore((state) => state.signInEmail);
+  const signInGoogle = useAuthStore((state) => state.signInGoogle);
+  const loading = useAuthStore((state) => state.loading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
 
   useEffect(() => {
-    if (error) {
-      Alert.alert(t("common.error"), error, [
-        { text: "OK", onPress: clearError },
-      ]);
-    }
-  }, [error]);
+    if (!error) return;
+    Alert.alert("Terjadi Kesalahan", error.message, [
+      {
+        text: "OK",
+        onPress: () => clearError(),
+      },
+    ]);
+  }, [error?.id]);
 
   const handleSubmit = async () => {
     if (!email || !password) {

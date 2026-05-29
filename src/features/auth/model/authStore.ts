@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/shared/lib/supabase";
+import { AppError, createAppError } from "../../../shared/utils/error";
 
 type AuthState = {
   session: Session | null;
@@ -13,7 +14,7 @@ type AuthState = {
   signUpEmail: (email: string, password: string, name: string) => Promise<void>;
   signInGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  error: string | null;
+  error: AppError | null;
   clearError: () => void;
 };
 
@@ -43,7 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       email,
       password,
     });
-    if (error) set({ error: error.message });
+    if (error) set({ error: createAppError(error.message) });
     set({ loading: false });
   },
 
@@ -56,7 +57,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         data: { full_name: name },
       },
     });
-    if (error) set({ error: error.message });
+    if (error) set({ error: createAppError(error.message) });
     set({ loading: false });
   },
 
@@ -68,7 +69,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         redirectTo: "passandi://auth/callback",
       },
     });
-    if (error) set({ error: error.message });
+    if (error) set({ error: createAppError(error.message) });
     set({ loading: false });
   },
 

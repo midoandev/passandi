@@ -17,6 +17,7 @@ import { AppInput } from "@/shared/ui/AppInput";
 import { AppButton } from "@/shared/ui/AppButton";
 import { colors } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
+import { AppBar } from "../../../shared/ui/AppBar";
 
 export function RegisterScreen() {
   const { t } = useTranslation();
@@ -32,11 +33,11 @@ export function RegisterScreen() {
 
   useEffect(() => {
     if (error) {
-      Alert.alert(t("common.error"), error, [
+      Alert.alert(t("common.error"), error.message, [
         { text: "OK", onPress: clearError },
       ]);
     }
-  }, [error]);
+  }, [error?.id]);
 
   const validate = (): string | null => {
     if (!name.trim() || !email.trim() || !password || !confirmPassword) {
@@ -64,59 +65,15 @@ export function RegisterScreen() {
       style={[styles.flex, { backgroundColor: tokens.bg }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <AppBar title={t("auth.register")} />
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header dengan Back Button */}
-        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={[
-              styles.backBtn,
-              {
-                backgroundColor: tokens.surface,
-                borderColor: tokens.border,
-              },
-            ]}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={{ color: tokens.text, fontSize: 18 }}>←</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={toggle}>
-            <Text style={{ color: tokens.muted }}>
-              {mode === "dark" ? "☀️" : "🌙"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Top Section */}
-        <View style={styles.topSection}>
-          <View
-            style={[
-              styles.logoWrap,
-              {
-                backgroundColor: colors.brand.navy,
-                borderColor: colors.brand.blue + "44",
-              },
-            ]}
-          >
-            <Text style={styles.logoIcon}>🔐</Text>
-          </View>
-          <Text style={[styles.appName, { color: tokens.text }]}>
-            {t("common.app_name")}
-          </Text>
-          <Text style={[styles.tagline, { color: tokens.muted }]}>
-            {t("common.tagline")}
-          </Text>
-        </View>
-
-        {/* Form Card */}
         <View
           style={[
-            styles.card,
+            styles.registrationCard,
             {
               backgroundColor: tokens.surface,
               borderColor: tokens.border,
@@ -166,21 +123,6 @@ export function RegisterScreen() {
             loading={loading}
             style={styles.btnPrimary}
           />
-
-          {/* Go to Login */}
-          <View style={styles.bottomRow}>
-            <Text style={[styles.bottomText, { color: tokens.subtle }]}>
-              {t("auth.have_account")}
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.replace("/(auth)/login")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={[styles.bottomLink, { color: colors.brand.blue }]}>
-                {t("auth.go_login")}
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -212,31 +154,10 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 28,
   },
-  logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-  logoIcon: { fontSize: 28 },
-  appName: {
-    fontSize: 24,
-    fontWeight: "500",
-    letterSpacing: 2,
-    marginBottom: 4,
-  },
-  tagline: { fontSize: 12 },
-
-  card: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+  registrationCard: {
     paddingHorizontal: 24,
     paddingTop: 28,
     paddingBottom: 48,
-    borderTopWidth: 0.5,
   },
   sectionLabel: {
     fontSize: 11,

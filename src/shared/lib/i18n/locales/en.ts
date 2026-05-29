@@ -79,4 +79,32 @@ export default {
     delete_confirm:
       "Your account and all data will be deleted forever. This action cannot be undone.",
   },
+  security: {
+    step_of: "Step {{current}} of {{total}}",
+    master_password_title: "Create Master Password",
+    master_password_subtitle:
+      "Your master key to lock all your data. Don't forget it.",
+    master_password_label: "Master Password",
+    master_password_confirm: "Confirm Master Password",
+    master_placeholder: "At least 8 characters",
+    master_confirm_placeholder: "Repeat master password",
+    strength_weak: "Weak",
+    strength_fair: "Fair",
+    strength_good: "Good",
+    strength_strong: "Strong",
+    btn_continue: "Continue →",
+    error_empty: "All fields are required.",
+    error_min_length: "Minimum 8 characters.",
+    error_not_match: "Passwords do not match.",
+
+    pin_title: "Create 6-Digit PIN",
+    pin_subtitle: "For faster access every day",
+    pin_confirm_title: "Confirm PIN",
+    pin_confirm_subtitle: "Re-enter your PIN",
+    pin_error_not_match: "PIN doesn't match. Try again.",
+
+    success_title: "All Set!",
+    success_subtitle: "Your account is secured. Welcome to Passandi.",
+    btn_enter_vault: "Enter Vault",
+  },
 } as const;
