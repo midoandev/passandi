@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "passandi",
+    "name": "Passandi",
     "slug": "passandi",
+    "scheme": "passandi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "main": "expo-router/entry",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
+      "icon": "./assets/splash-icon.png",
       "supportsTablet": true,
       "bundleIdentifier": "id.midosaurus.passandi"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F8FAFF"
       },
       "predictiveBackGestureEnabled": false,
       "package": "id.midosaurus.passandi"
@@ -24,6 +24,23 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-status-bar", "expo-secure-store"]
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/adaptive-icon.png",
+          "resizeMode": "contain",
+          "imageWidth": 200,
+          "backgroundColor": "#F8FAFF",
+          "dark": {
+            "backgroundColor": "#0F1E33"
+          }
+        }
+      ],
+      "expo-web-browser"
+    ]
   }
 }
