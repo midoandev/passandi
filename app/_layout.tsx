@@ -7,6 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, useTheme } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
+import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
+import { usePendingCount } from "../src/shared/lib/sync/usePendingCount";
 
 function AuthGate() {
   const initialized = useAuthStore((s) => s.initialized);
@@ -32,11 +34,13 @@ function AuthGate() {
       isNavigating.current = true;
 
       try {
+
         // Kondisi 1 — tidak ada session
         if (!session || !user) {
           if (!inAuthGroup) router.replace("/(auth)/login");
           return;
         }
+
 
         // Ada session → cek PIN untuk userId ini
         // Kondisi 2, 6, 9 — belum ada PIN
@@ -62,6 +66,12 @@ function AuthGate() {
   return null;
 }
 
+function SyncProvider() {
+  useNetworkSync();
+  usePendingCount();
+  return null;
+}
+
 function AppStatusBar() {
   const { mode } = useTheme();
   return <StatusBar style={mode === "dark" ? "light" : "dark"} />;
@@ -82,6 +92,7 @@ export default function RootLayout() {
         <ThemeProvider>
           <AuthGate />
           <AppStatusBar />
+          <SyncProvider />
           <Stack screenOptions={{ headerShown: false }} />
         </ThemeProvider>
       </QueryClientProvider>

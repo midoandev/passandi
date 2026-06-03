@@ -71,16 +71,6 @@ export function SetupPinScreen() {
         { backgroundColor: tokens.bg, paddingTop: insets.top + 16 },
       ]}
     >
-      {/* Step Indicator */}
-      <Text style={[styles.stepLabel, { color: tokens.muted }]}>
-        {t("security.step_of", { current: 2, total: 2 })}
-      </Text>
-
-      <View style={styles.stepDots}>
-        <View style={[styles.dot, { backgroundColor: colors.brand.blue }]} />
-        <View style={[styles.dot, { backgroundColor: colors.brand.blue }]} />
-      </View>
-
       {/* Icon */}
       <View
         style={[
@@ -134,10 +124,10 @@ export function SetupPinScreen() {
               styles.numBtn,
               val === "" && styles.numBtnEmpty,
               val !== "" &&
-                val !== "⌫" && {
-                  backgroundColor: tokens.surface,
-                  borderColor: tokens.border,
-                },
+              val !== "⌫" && {
+                backgroundColor: tokens.surface,
+                borderColor: tokens.border,
+              },
             ]}
           >
             <Text
@@ -158,13 +148,6 @@ export function SetupPinScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, paddingHorizontal: 32 },
-  stepLabel: {
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    textAlign: "center",
-    marginBottom: 12,
-  },
   stepDots: {
     flexDirection: "row",
     justifyContent: "center",

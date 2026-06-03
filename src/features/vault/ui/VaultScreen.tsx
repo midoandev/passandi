@@ -24,6 +24,8 @@ import { VaultItemCard } from "./VaultItemCard";
 import { SkeletonList } from "@/shared/ui/SkeletonItem";
 import type { VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
+import { SyncIndicator } from "@/shared/ui/SyncIndicator";
+import { useSyncStore } from "@/shared/lib/sync/syncStore";
 
 // Lazy loading config
 const PAGE_SIZE = 15;
@@ -33,6 +35,9 @@ export function VaultScreen() {
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
+
+  const startSync = useSyncStore((s) => s.startSync);
+  const userId = useAuthStore((s) => s.user?.id ?? "");
 
   const selectedCategoryId = useVaultUIStore((s) => s.selectedCategoryId);
   const searchQuery = useVaultUIStore((s) => s.searchQuery);
@@ -104,6 +109,11 @@ export function VaultScreen() {
       params: { id: item.id },
     });
   }, []);
+  const handleFAB = useCallback(() => {
+    router.push({
+      pathname: "/vault-form",
+    });
+  }, []);
 
   const firstName =
     user?.user_metadata?.full_name?.split(" ")[0] ??
@@ -147,6 +157,16 @@ export function VaultScreen() {
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
+      <View style={styles.fabWrap}>
+        <View style={[styles.fabRing, { borderColor: tokens.bg }]} />
+        <TouchableOpacity
+          onPress={handleFAB}
+          activeOpacity={0.8}
+          style={styles.fab}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={visibleItems}
         keyExtractor={(item) => item.id}
@@ -181,22 +201,37 @@ export function VaultScreen() {
                   {firstName} 👋
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={toggleSearch}
-                style={[
-                  styles.iconBtn,
-                  {
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                {/* Sync indicator */}
+                <SyncIndicator />
+
+                {/* Manual sync button */}
+                <TouchableOpacity
+                  onPress={() => startSync(userId)}
+                  style={[styles.iconBtn, {
                     backgroundColor: tokens.surface,
                     borderColor: tokens.border,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={isSearchVisible ? "close" : "search"}
-                  size={20}
-                  color={tokens.muted}
-                />
-              </TouchableOpacity>
+                  }]}
+                >
+                  <Ionicons name="sync-outline" size={18} color={tokens.muted} />
+                </TouchableOpacity>
+
+                {/* Search button */}
+                <TouchableOpacity
+                  onPress={toggleSearch}
+                  style={[styles.iconBtn, {
+                    backgroundColor: tokens.surface,
+                    borderColor: tokens.border,
+                  }]}
+                >
+                  <Ionicons
+                    name={isSearchVisible ? "close" : "search"}
+                    size={20}
+                    color={tokens.muted}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Search Bar */}
@@ -248,10 +283,10 @@ export function VaultScreen() {
                       isActive
                         ? { backgroundColor: colors.brand.blue }
                         : {
-                            backgroundColor: tokens.surface,
-                            borderWidth: 0.5,
-                            borderColor: tokens.border,
-                          },
+                          backgroundColor: tokens.surface,
+                          borderWidth: 0.5,
+                          borderColor: tokens.border,
+                        },
                     ]}
                   >
                     <Text style={styles.catIcon}>{cat.icon}</Text>
@@ -331,7 +366,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 12,
   },
-
   emptyWrap: {
     flex: 1,
     alignItems: "center",
@@ -341,6 +375,31 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 16, fontWeight: "500" },
   emptySub: { fontSize: 13, textAlign: "center" },
-
   footerLoader: { paddingTop: 4 },
+  fabWrap: {
+    width: 72,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    right: 24, bottom: 150,
+  },
+  fabRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    borderWidth: 6,
+  },
+  fab: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.brand.blue,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.brand.blue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
+  },
 });

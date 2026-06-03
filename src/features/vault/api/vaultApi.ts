@@ -1,168 +1,281 @@
-import { supabase } from "@/shared/lib/supabase";
+import * as Crypto from "expo-crypto";
+import { getDb } from "@/shared/lib/database/db";
 import { encrypt, decrypt } from "@/shared/lib/encryption";
-import type { VaultItem, VaultItemForm, VaultCategory } from "@/entities/vault";
+import type { VaultItem, VaultItemForm } from "@/entities/vault";
 
-// Helper: snake_case → camelCase
-const toCamel = (item: any): VaultItem => ({
-  id: item.id,
-  userId: item.user_id,
-  title: item.title,
-  categoryId: item.category_id,
-  isFavorite: item.is_favorite,
-  iconType: item.icon_type,
-  iconValue: item.icon_value,
-  iconColor: item.icon_color,
-  username: item.username,
-  email: item.email,
-  password: item.password,
-  pin: item.pin,
-  phone: item.phone,
-  url: item.url,
-  notes: item.notes,
-  holderName: item.holder_name,
-  expiredDate: item.expired_date,
-  customFields: item.custom_fields ?? [],
-  createdAt: item.created_at,
-  updatedAt: item.updated_at,
+// Helper: row → VaultItem
+const rowToItem = (row: any, userId: string): VaultItem => ({
+  id: row.id,
+  userId: row.user_id,
+  title: row.title,
+  categoryId: row.category_id,
+  isFavorite: row.is_favorite === 1,
+  iconType: row.icon_type,
+  iconValue: row.icon_value,
+  iconColor: row.icon_color,
+  username: row.username ?? "",
+  email: row.email ?? "",
+  password: row.password ? decrypt(row.password, userId) : "",
+  pin: row.pin ? decrypt(row.pin, userId) : "",
+  phone: row.phone ?? "",
+  url: row.url ?? "",
+  notes: row.notes ?? "",
+  holderName: row.holder_name ?? "",
+  expiredDate: row.expired_date ?? "",
+  customFields: (() => {
+    try { return JSON.parse(row.custom_fields || "[]"); } catch { return []; }
+  })(),
+  createdAt: new Date(row.created_at).toISOString(),
+  updatedAt: new Date(row.updated_at).toISOString(),
 });
 
-// Helper: camelCase → snake_case
-const toSnake = (form: Partial<VaultItemForm>, userId: string) => ({
-  user_id: userId,
-  title: form.title,
-  category_id: form.categoryId,
-  is_favorite: form.isFavorite,
-  icon_type: form.iconType,
-  icon_value: form.iconValue,
-  icon_color: form.iconColor,
-  username: form.username ?? null,
-  email: form.email ?? null,
-  password: form.password ? encrypt(form.password, userId) : null,
-  pin: form.pin ? encrypt(form.pin, userId) : null,
-  phone: form.phone ?? null,
-  url: form.url ?? null,
-  notes: form.notes ?? null,
-  holder_name: form.holderName ?? null,
-  expired_date: form.expiredDate ?? null,
-  custom_fields: form.customFields ?? [],
-});
-
-// READ — ambil semua vault items
-export const fetchVaultItems = async (userId: string): Promise<VaultItem[]> => {
-  const { data, error } = await supabase
-    .from("vault_items")
-    .select("*")
-    .eq("user_id", userId)
-    .order("is_favorite", { ascending: false })
-    .order("updated_at", { ascending: false });
-
-  if (error) throw error;
-
-  return (data ?? []).map((item) => {
-    const camel = toCamel(item);
-    // Decrypt sensitive fields setelah fetch
-    if (camel.password) camel.password = decrypt(camel.password, userId);
-    if (camel.pin) camel.pin = decrypt(camel.pin, userId);
-    return camel;
-  });
+// READ
+export const getLocalVaultItems = async (
+  userId: string
+): Promise<VaultItem[]> => {
+  const db = await getDb();
+  const rows = await db.getAllAsync<any>(
+    `SELECT * FROM vault_items
+     WHERE user_id = ? AND is_deleted = 0
+     ORDER BY is_favorite DESC, updated_at DESC`,
+    [userId]
+  );
+  return rows.map((r) => rowToItem(r, userId));
 };
 
 // CREATE
-export const createVaultItem = async (
+export const createLocalVaultItem = async (
   userId: string,
-  form: VaultItemForm,
+  form: VaultItemForm
 ): Promise<VaultItem> => {
-  if (!userId) throw new Error("User tidak terautentikasi");
+  const db = await getDb();
+  const id = Crypto.randomUUID();
+  const now = Date.now();
 
-  const payload = toSnake(form, userId);
-  console.log("=== CREATE PAYLOAD ===", JSON.stringify(payload, null, 2));
+  await db.runAsync(
+    `INSERT INTO vault_items (
+      id, user_id, title, category_id, is_favorite,
+      icon_type, icon_value, icon_color,
+      username, email, password, pin, phone, url,
+      notes, holder_name, expired_date, custom_fields,
+      local_sync_status, is_deleted, created_at, updated_at
+    ) VALUES (
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+    )`,
+    [
+      id, userId, form.title, form.categoryId,
+      form.isFavorite ? 1 : 0,
+      form.iconType, form.iconValue, form.iconColor,
+      form.username || null,
+      form.email || null,
+      form.password ? encrypt(form.password, userId) : null,
+      form.pin ? encrypt(form.pin, userId) : null,
+      form.phone || null,
+      form.url || null,
+      form.notes || null,
+      form.holderName || null,
+      form.expiredDate || null,
+      JSON.stringify(form.customFields ?? []),
+      "pending", 0, now, now,
+    ]
+  );
 
-  const { data, error } = await supabase
-    .from("vault_items")
-    .insert(payload)
-    .select()
-    .single();
-
-  console.log("=== SUPABASE RESPONSE ===", { data, error });
-
-  if (error) throw error;
-
-  const camel = toCamel(data);
-  if (camel.password) camel.password = decrypt(camel.password, userId);
-  if (camel.pin) camel.pin = decrypt(camel.pin, userId);
-  return camel;
+  const row = await db.getFirstAsync<any>(
+    "SELECT * FROM vault_items WHERE id = ?", [id]
+  );
+  return rowToItem(row, userId);
 };
 
 // UPDATE
-export const updateVaultItem = async (
+export const updateLocalVaultItem = async (
   userId: string,
   id: string,
-  form: Partial<VaultItemForm>,
+  form: Partial<VaultItemForm>
 ): Promise<VaultItem> => {
-  const { data, error } = await supabase
-    .from("vault_items")
-    .update(toSnake(form, userId))
-    .eq("id", id)
-    .eq("user_id", userId)
-    .select()
-    .single();
+  const db = await getDb();
+  const now = Date.now();
 
-  if (error) throw error;
+  await db.runAsync(
+    `UPDATE vault_items SET
+      title           = COALESCE(?, title),
+      category_id     = COALESCE(?, category_id),
+      is_favorite     = COALESCE(?, is_favorite),
+      icon_type       = COALESCE(?, icon_type),
+      icon_value      = COALESCE(?, icon_value),
+      icon_color      = COALESCE(?, icon_color),
+      username        = ?,
+      email           = ?,
+      password        = ?,
+      pin             = ?,
+      phone           = ?,
+      url             = ?,
+      notes           = ?,
+      holder_name     = ?,
+      expired_date    = ?,
+      custom_fields   = COALESCE(?, custom_fields),
+      local_sync_status = 'pending',
+      updated_at      = ?
+    WHERE id = ? AND user_id = ?`,
+    [
+      form.title ?? null,
+      form.categoryId ?? null,
+      form.isFavorite !== undefined ? (form.isFavorite ? 1 : 0) : null,
+      form.iconType ?? null,
+      form.iconValue ?? null,
+      form.iconColor ?? null,
+      form.username ?? null,
+      form.email ?? null,
+      form.password ? encrypt(form.password, userId) : null,
+      form.pin ? encrypt(form.pin, userId) : null,
+      form.phone ?? null,
+      form.url ?? null,
+      form.notes ?? null,
+      form.holderName ?? null,
+      form.expiredDate ?? null,
+      form.customFields ? JSON.stringify(form.customFields) : null,
+      now, id, userId,
+    ]
+  );
 
-  const camel = toCamel(data);
-  if (camel.password) camel.password = decrypt(camel.password, userId);
-  if (camel.pin) camel.pin = decrypt(camel.pin, userId);
-  return camel;
+  const row = await db.getFirstAsync<any>(
+    "SELECT * FROM vault_items WHERE id = ?", [id]
+  );
+  return rowToItem(row, userId);
 };
 
-// DELETE
-export const deleteVaultItem = async (
+// DELETE (soft)
+export const deleteLocalVaultItem = async (
   userId: string,
-  id: string,
+  id: string
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("vault_items")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
-
-  if (error) throw error;
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE vault_items
+     SET is_deleted = 1, local_sync_status = 'pending', updated_at = ?
+     WHERE id = ? AND user_id = ?`,
+    [Date.now(), id, userId]
+  );
 };
 
 // TOGGLE FAVORITE
-export const toggleFavorite = async (
+export const toggleLocalFavorite = async (
   userId: string,
   id: string,
-  current: boolean,
+  current: boolean
 ): Promise<void> => {
-  const { error } = await supabase
-    .from("vault_items")
-    .update({ is_favorite: !current })
-    .eq("id", id)
-    .eq("user_id", userId);
-
-  if (error) throw error;
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE vault_items
+     SET is_favorite = ?, local_sync_status = 'pending', updated_at = ?
+     WHERE id = ? AND user_id = ?`,
+    [current ? 0 : 1, Date.now(), id, userId]
+  );
 };
 
-// CATEGORIES
-export const fetchCategories = async (
+// GET PENDING (untuk sync)
+export const getPendingItems = async (userId: string) => {
+  const db = await getDb();
+  return db.getAllAsync<any>(
+    `SELECT * FROM vault_items
+     WHERE user_id = ? AND local_sync_status IN ('pending','failed')`,
+    [userId]
+  );
+};
+
+// MARK SYNCED
+export const markItemSynced = async (
+  id: string,
+  serverId: string
+): Promise<void> => {
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE vault_items
+     SET local_sync_status = 'synced', server_id = ?
+     WHERE id = ?`,
+    [serverId, id]
+  );
+};
+
+// MARK FAILED
+export const markItemFailed = async (id: string): Promise<void> => {
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE vault_items SET local_sync_status = 'failed' WHERE id = ?`,
+    [id]
+  );
+};
+
+// UPSERT dari server (untuk pull)
+export const upsertItemFromServer = async (
   userId: string,
-): Promise<VaultCategory[]> => {
-  const { data, error } = await supabase
-    .from("vault_categories")
-    .select("*")
-    .eq("user_id", userId)
-    .order("sort_order");
+  serverItem: any
+): Promise<void> => {
+  const db = await getDb();
+  const now = Date.now();
 
-  if (error) throw error;
+  const existing = await db.getFirstAsync<any>(
+    "SELECT * FROM vault_items WHERE server_id = ?",
+    [serverItem.id]
+  );
 
-  return (data ?? []).map((c) => ({
-    id: c.id,
-    userId: c.user_id,
-    label: c.label,
-    icon: c.icon,
-    color: c.color,
-    sortOrder: c.sort_order,
-    isDefault: c.is_default,
-  }));
+  if (existing) {
+    const serverTime = new Date(serverItem.updated_at).getTime();
+    if (serverTime <= existing.updated_at) return; // local lebih baru
+
+    await db.runAsync(
+      `UPDATE vault_items SET
+        title = ?, category_id = ?, is_favorite = ?,
+        icon_type = ?, icon_value = ?, icon_color = ?,
+        username = ?, email = ?, password = ?, pin = ?,
+        phone = ?, url = ?, notes = ?,
+        holder_name = ?, expired_date = ?, custom_fields = ?,
+        local_sync_status = 'synced', updated_at = ?
+       WHERE server_id = ?`,
+      [
+        serverItem.title, serverItem.category_id,
+        serverItem.is_favorite ? 1 : 0,
+        serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
+        serverItem.username ?? null,
+        serverItem.email ?? null,
+        serverItem.password ?? null,
+        serverItem.pin ?? null,
+        serverItem.phone ?? null,
+        serverItem.url ?? null,
+        serverItem.notes ?? null,
+        serverItem.holder_name ?? null,
+        serverItem.expired_date ?? null,
+        JSON.stringify(serverItem.custom_fields ?? []),
+        new Date(serverItem.updated_at).getTime(),
+        serverItem.id,
+      ]
+    );
+  } else {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO vault_items (
+        id, server_id, user_id, title, category_id, is_favorite,
+        icon_type, icon_value, icon_color,
+        username, email, password, pin, phone, url,
+        notes, holder_name, expired_date, custom_fields,
+        local_sync_status, is_deleted, created_at, updated_at
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [
+        Crypto.randomUUID(), serverItem.id, userId,
+        serverItem.title, serverItem.category_id,
+        serverItem.is_favorite ? 1 : 0,
+        serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
+        serverItem.username ?? null,
+        serverItem.email ?? null,
+        serverItem.password ?? null,
+        serverItem.pin ?? null,
+        serverItem.phone ?? null,
+        serverItem.url ?? null,
+        serverItem.notes ?? null,
+        serverItem.holder_name ?? null,
+        serverItem.expired_date ?? null,
+        JSON.stringify(serverItem.custom_fields ?? []),
+        "synced", 0, now,
+        new Date(serverItem.updated_at).getTime(),
+      ]
+    );
+  }
 };
