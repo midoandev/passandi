@@ -12,8 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/shared/config/ThemeContext";
-import { AppInput } from "@/shared/ui/AppInput";
-import { AppButton } from "@/shared/ui/AppButton";
+import { AppButton, AppInput } from "@/shared/ui";
 import { colors } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useTranslation } from "react-i18next";
@@ -30,25 +29,19 @@ export function LoginScreen() {
   const signInEmail = useAuthStore((state) => state.signInEmail);
   const signInGoogle = useAuthStore((state) => state.signInGoogle);
   const loading = useAuthStore((state) => state.loading);
-  const error = useAuthStore((state) => state.error);
-  const clearError = useAuthStore((state) => state.clearError);
-
-  useEffect(() => {
-    if (!error) return;
-    Alert.alert("Terjadi Kesalahan", error.message, [
-      {
-        text: "OK",
-        onPress: () => clearError(),
-      },
-    ]);
-  }, [error?.id]);
 
   const handleSubmit = async () => {
     if (!email || !password) {
       Alert.alert(t("common.info"), t("auth.error_empty"), [{ text: "OK" }]);
       return;
     }
-    await signInEmail(email, password);
+
+    const result = await signInEmail(email, password);
+
+    if (!result.success) {
+      Alert.alert(t("common.error"), result.error.message);
+      return;
+    }
   };
 
   return (
@@ -74,7 +67,7 @@ export function LoginScreen() {
         <View style={styles.topSection}>
           <Image
             style={styles.logoWrap}
-            source={require("../../../../assets/adaptive-icon.png")}
+            source={require("../../../../assets/images/icon.png")}
           />
 
           <Text style={[styles.appName, { color: tokens.text }]}>

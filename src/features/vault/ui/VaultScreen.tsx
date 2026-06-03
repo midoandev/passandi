@@ -1,199 +1,282 @@
+import { useMemo, useCallback, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
   FlatList,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
-import { useTranslation } from "react-i18next";
+import { useAuthStore } from "@/features/auth/model/authStore";
+import {
+  useVaultItems,
+  useCategories,
+  useToggleFavorite,
+} from "@/features/vault/model/useVaultQuery";
+import { useVaultUIStore } from "@/features/vault/model/vaultStore";
+import { VaultItemCard } from "./VaultItemCard";
+import { SkeletonList } from "@/shared/ui/SkeletonItem";
+import type { VaultItem } from "@/entities/vault";
+import { router } from "expo-router";
 
-const CATEGORIES = ["Semua", "Favorit", "Bank", "Sosmed", "EWallet", "Work"];
-
-const MOCK_ACCOUNTS = [
-  {
-    id: "1",
-    title: "BCA Mobile",
-    sub: "082xxxxxxxx",
-    icon: "🏦",
-    favorite: true,
-    color: "#2563EB22",
-    iconColor: "#60A5FA",
-  },
-  {
-    id: "2",
-    title: "WhatsApp",
-    sub: "agus@gmail.com",
-    icon: "💬",
-    favorite: true,
-    color: "#10B98122",
-    iconColor: "#34D399",
-  },
-  {
-    id: "3",
-    title: "GoPay",
-    sub: "082xxxxxxxx",
-    icon: "💳",
-    favorite: false,
-    color: "#8B5CF622",
-    iconColor: "#A78BFA",
-  },
-  {
-    id: "4",
-    title: "Instagram",
-    sub: "@agus.mido",
-    icon: "📸",
-    favorite: false,
-    color: "#EC489922",
-    iconColor: "#F472B6",
-  },
-  {
-    id: "5",
-    title: "Tokopedia",
-    sub: "agus@gmail.com",
-    icon: "🛍️",
-    favorite: false,
-    color: "#F59E0B22",
-    iconColor: "#FCD34D",
-  },
-];
+// Lazy loading config
+const PAGE_SIZE = 15;
 
 export function VaultScreen() {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
+  const user = useAuthStore((s) => s.user);
+
+  const selectedCategoryId = useVaultUIStore((s) => s.selectedCategoryId);
+  const searchQuery = useVaultUIStore((s) => s.searchQuery);
+  const isSearchVisible = useVaultUIStore((s) => s.isSearchVisible);
+  const setCategory = useVaultUIStore((s) => s.setCategory);
+  const setSearchQuery = useVaultUIStore((s) => s.setSearchQuery);
+  const toggleSearch = useVaultUIStore((s) => s.toggleSearch);
+
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const {
+    data: items = [],
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useVaultItems();
+  const { data: categories = [] } = useCategories();
+  const toggleFavorite = useToggleFavorite();
+
+  // Filter items
+  const filteredItems = useMemo(() => {
+    let result = [...items];
+
+    if (selectedCategoryId === "favorite") {
+      result = result.filter((i) => i.isFavorite);
+    } else if (selectedCategoryId !== "all") {
+      result = result.filter((i) => i.categoryId === selectedCategoryId);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          i.username?.toLowerCase().includes(q) ||
+          i.email?.toLowerCase().includes(q),
+      );
+    }
+
+    return result;
+  }, [items, selectedCategoryId, searchQuery]);
+
+  // Lazy loading — slice data per page
+  const visibleItems = useMemo(
+    () => filteredItems.slice(0, page * PAGE_SIZE),
+    [filteredItems, page],
+  );
+
+  const hasMore = visibleItems.length < filteredItems.length;
+
+  const handleLoadMore = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setTimeout(() => {
+        setPage((p) => p + 1);
+        setIsLoadingMore(false);
+      }, 300);
+    }
+  }, [hasMore, isLoadingMore]);
+
+  const handleFavorite = useCallback((item: VaultItem) => {
+    toggleFavorite.mutate({ id: item.id, current: item.isFavorite });
+  }, []);
+
+  const handleItemPress = useCallback((item: VaultItem) => {
+    router.push({
+      pathname: "/vault-form",
+      params: { id: item.id },
+    });
+  }, []);
+
+  const firstName =
+    user?.user_metadata?.full_name?.split(" ")[0] ??
+    user?.email?.split("@")[0] ??
+    "";
+
+  const renderItem = useCallback(
+    ({ item }: { item: VaultItem }) => (
+      <VaultItemCard
+        item={item}
+        onPress={handleItemPress}
+        onFavorite={handleFavorite}
+      />
+    ),
+    [handleItemPress, handleFavorite],
+  );
+
+  const renderFooter = useCallback(() => {
+    if (!hasMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <SkeletonList count={2} />
+      </View>
+    );
+  }, [hasMore]);
+
+  const renderEmpty = () => {
+    if (isLoading) return <SkeletonList count={6} />;
+    return (
+      <View style={styles.emptyWrap}>
+        <Ionicons name="shield-outline" size={48} color={tokens.border} />
+        <Text style={[styles.emptyTitle, { color: tokens.text }]}>
+          {t("vault.empty_title")}
+        </Text>
+        <Text style={[styles.emptySub, { color: tokens.subtle }]}>
+          {t("vault.empty_sub")}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
-      <ScrollView
+      <FlatList
+        data={visibleItems}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.brand.blue}
+          />
+        }
         contentContainerStyle={{
           paddingTop: insets.top + 8,
-          paddingBottom: 120,
+          paddingBottom: 140,
+          paddingHorizontal: 20,
+          flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
+        ListHeaderComponent={
           <View>
-            <Text style={[styles.greetSub, { color: tokens.muted }]}>
-              {t("vault.greeting")}
-            </Text>
-            <Text style={[styles.greetName, { color: tokens.text }]}>
-              Agus 👋
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.avatar,
-              {
-                backgroundColor: tokens.surface,
-                borderColor: tokens.border,
-              },
-            ]}
-          >
-            <Text style={styles.avatarText}>AG</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <TouchableOpacity
-          style={[
-            styles.searchBar,
-            {
-              backgroundColor: tokens.surface,
-              borderColor: tokens.border,
-            },
-          ]}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.searchIcon}>🔍</Text>
-          <Text style={[styles.searchPlaceholder, { color: tokens.subtle }]}>
-            {t("vault.search")}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Categories */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catList}
-        >
-          {CATEGORIES.map((cat, i) => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.catChip,
-                i === 0
-                  ? { backgroundColor: colors.brand.blue }
-                  : {
-                      backgroundColor: tokens.surface,
-                      borderWidth: 0.5,
-                      borderColor: tokens.border,
-                    },
-              ]}
-            >
-              <Text
+            {/* Header */}
+            <View style={styles.header}>
+              <View>
+                <Text style={[styles.greetSub, { color: tokens.muted }]}>
+                  {t("vault.greeting")}
+                </Text>
+                <Text style={[styles.greetName, { color: tokens.text }]}>
+                  {firstName} 👋
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={toggleSearch}
                 style={[
-                  styles.catText,
-                  { color: i === 0 ? "#fff" : tokens.muted },
+                  styles.iconBtn,
+                  {
+                    backgroundColor: tokens.surface,
+                    borderColor: tokens.border,
+                  },
                 ]}
               >
-                {t(`category.${cat.toLowerCase()}`)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Section — Favorit */}
-        <Text style={[styles.sectionTitle, { color: tokens.muted }]}>
-          {t("vault.favorites").toLocaleLowerCase()}
-        </Text>
-
-        <View style={styles.accountList}>
-          {MOCK_ACCOUNTS.map((acc) => (
-            <TouchableOpacity
-              key={acc.id}
-              activeOpacity={0.7}
-              style={[
-                styles.accountItem,
-                {
-                  backgroundColor: tokens.surface,
-                  borderColor: tokens.border,
-                },
-              ]}
-            >
-              {/* Icon */}
-              <View
-                style={[styles.accountIcon, { backgroundColor: acc.color }]}
-              >
-                <Text style={{ fontSize: 18 }}>{acc.icon}</Text>
-              </View>
-
-              {/* Body */}
-              <View style={styles.accountBody}>
-                <Text style={[styles.accountTitle, { color: tokens.text }]}>
-                  {acc.title}
-                </Text>
-                <Text style={[styles.accountSub, { color: tokens.subtle }]}>
-                  {acc.sub}
-                </Text>
-              </View>
-
-              {/* Star */}
-              <TouchableOpacity
-                hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-              >
-                <Text style={{ fontSize: 16 }}>
-                  {acc.favorite ? "⭐" : "☆"}
-                </Text>
+                <Ionicons
+                  name={isSearchVisible ? "close" : "search"}
+                  size={20}
+                  color={tokens.muted}
+                />
               </TouchableOpacity>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+            </View>
+
+            {/* Search Bar */}
+            {isSearchVisible && (
+              <View
+                style={[
+                  styles.searchBar,
+                  {
+                    backgroundColor: tokens.surface,
+                    borderColor: tokens.border,
+                  },
+                ]}
+              >
+                <Ionicons name="search" size={16} color={tokens.subtle} />
+                <TextInput
+                  style={[styles.searchInput, { color: tokens.text }]}
+                  placeholder={t("vault.search")}
+                  placeholderTextColor={tokens.subtle}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoFocus
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery("")}>
+                    <Ionicons
+                      name="close-circle"
+                      size={16}
+                      color={tokens.subtle}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            {/* Category Chips */}
+            <FlatList
+              data={categories}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(c) => c.id}
+              contentContainerStyle={styles.catList}
+              renderItem={({ item: cat }) => {
+                const isActive = selectedCategoryId === cat.id;
+                return (
+                  <TouchableOpacity
+                    onPress={() => setCategory(cat.id)}
+                    style={[
+                      styles.catChip,
+                      isActive
+                        ? { backgroundColor: colors.brand.blue }
+                        : {
+                            backgroundColor: tokens.surface,
+                            borderWidth: 0.5,
+                            borderColor: tokens.border,
+                          },
+                    ]}
+                  >
+                    <Text style={styles.catIcon}>{cat.icon}</Text>
+                    <Text
+                      style={[
+                        styles.catLabel,
+                        { color: isActive ? "#fff" : tokens.muted },
+                      ]}
+                    >
+                      {cat.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+
+            {/* Section Title */}
+            {filteredItems.length > 0 && (
+              <Text style={[styles.sectionTitle, { color: tokens.muted }]}>
+                {filteredItems.length} {t("vault.items_count")}
+              </Text>
+            )}
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -205,12 +288,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
     marginBottom: 16,
   },
   greetSub: { fontSize: 12, marginBottom: 2 },
   greetName: { fontSize: 22, fontWeight: "500" },
-  avatar: {
+  iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
@@ -218,58 +300,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontSize: 13, fontWeight: "500", color: "#7A9CC4" },
 
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 20,
-    marginBottom: 16,
     borderRadius: 12,
     borderWidth: 0.5,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     height: 46,
     gap: 8,
+    marginBottom: 14,
   },
-  searchIcon: { fontSize: 14 },
-  searchPlaceholder: { fontSize: 13 },
+  searchInput: { flex: 1, fontSize: 14 },
 
-  catList: {
-    paddingHorizontal: 20,
-    gap: 8,
-    marginBottom: 20,
-  },
+  catList: { gap: 8, marginBottom: 16, paddingRight: 4 },
   catChip: {
-    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
+    gap: 5,
   },
-  catText: { fontSize: 12 },
+  catIcon: { fontSize: 13 },
+  catLabel: { fontSize: 12 },
 
   sectionTitle: {
     fontSize: 11,
-    letterSpacing: 1.5,
-    marginHorizontal: 20,
+    letterSpacing: 1,
+    textTransform: "uppercase",
     marginBottom: 12,
   },
 
-  accountList: { paddingHorizontal: 20, gap: 10 },
-  accountItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 0.5,
-    gap: 12,
-  },
-  accountIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+  emptyWrap: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingTop: 80,
+    gap: 10,
   },
-  accountBody: { flex: 1 },
-  accountTitle: { fontSize: 14, fontWeight: "500", marginBottom: 3 },
-  accountSub: { fontSize: 12 },
+  emptyTitle: { fontSize: 16, fontWeight: "500" },
+  emptySub: { fontSize: 13, textAlign: "center" },
+
+  footerLoader: { paddingTop: 4 },
 });

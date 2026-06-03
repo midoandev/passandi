@@ -1,1 +1,12 @@
 export { VaultScreen } from "./ui/VaultScreen";
+export { useVaultItems } from "./model/useVaultQuery";
+export { useCategories } from "./model/useVaultQuery";
+export { useCreateVaultItem } from "./model/useVaultQuery";
+export { useUpdateVaultItem } from "./model/useVaultQuery";
+export { useDeleteVaultItem } from "./model/useVaultQuery";
+export { useToggleFavorite } from "./model/useVaultQuery";
+export { useVaultUIStore } from "./model/vaultStore";
+export { VaultFormScreen } from "./ui/VaultFormScreen";
+export { VaultItemCard } from "./ui/VaultItemCard";
+export * from "./model/useVaultQuery";
+export * from "./model/vaultStore";

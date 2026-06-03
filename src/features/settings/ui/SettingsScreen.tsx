@@ -90,10 +90,11 @@ export function SettingsScreen() {
   const { tokens, mode, toggle } = useTheme();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
-  const signOut = useAuthStore((state) => state.signOut);
-
   const { t } = useTranslation();
   const { language, setLanguage } = useSettingsStore();
+  const signOut = useAuthStore((s) => s.signOut);
+  const wipeData = useAuthStore((s) => s.wipeData);
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
 
   const handleSignOut = () => {
     Alert.alert(t("auth.logout"), t("auth.logout_confirm"), [
@@ -238,7 +239,16 @@ export function SettingsScreen() {
             icon="🚪"
             iconBg={colors.brand.gold + "22"}
             title={t("settings.logout")}
-            onPress={handleSignOut}
+            onPress={() =>
+              Alert.alert(t("auth.logout"), t("auth.logout_confirm"), [
+                { text: t("common.cancel"), style: "cancel" },
+                {
+                  text: t("auth.logout"),
+                  style: "destructive",
+                  onPress: signOut,
+                },
+              ])
+            }
           />
         </SettingGroup>
 
@@ -252,7 +262,16 @@ export function SettingsScreen() {
             iconBg={colors.brand.danger + "22"}
             title={t("settings.wipe")}
             subtitle={t("settings.wipe_sub")}
-            onPress={handleWipe}
+            onPress={() =>
+              Alert.alert(t("settings.wipe"), t("settings.wipe_confirm"), [
+                { text: t("common.cancel"), style: "cancel" },
+                {
+                  text: t("common.delete"),
+                  style: "destructive",
+                  onPress: wipeData,
+                },
+              ])
+            }
             danger
           />
           <SettingRow
@@ -260,7 +279,20 @@ export function SettingsScreen() {
             iconBg={colors.brand.danger + "22"}
             title={t("settings.delete_account")}
             subtitle={t("settings.delete_account_sub")}
-            onPress={handleDeleteAccount}
+            onPress={() =>
+              Alert.alert(
+                t("settings.delete_account"),
+                t("settings.delete_confirm"),
+                [
+                  { text: t("common.cancel"), style: "cancel" },
+                  {
+                    text: t("common.delete"),
+                    style: "destructive",
+                    onPress: deleteAccount,
+                  },
+                ],
+              )
+            }
             danger
           />
         </SettingGroup>

@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
+import { useAuthStore } from "../model/authStore";
 
 const PIN_LENGTH = 6;
 const NUMPAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
@@ -19,7 +20,8 @@ export function SetupPinScreen() {
   const [confirmPin, setConfirmPin] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
 
-  const setupPin = useSecurityStore((state) => state.setupPin);
+  const user = useAuthStore((s) => s.user);
+  const setupPin = useSecurityStore((s) => s.setupPin);
 
   // Auto proceed saat PIN penuh
   useEffect(() => {
@@ -55,7 +57,8 @@ export function SetupPinScreen() {
       setPin("");
       return;
     }
-    await setupPin(pin);
+    if (!user?.id) return;
+    await setupPin(user.id, pin);
     router.replace("/(auth)/setup-success");
   };
 

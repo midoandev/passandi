@@ -5,24 +5,29 @@
     "scheme": "passandi",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "icon": "./assets/splash-icon.png",
+      "icon": "./assets/images/ios.png",
       "supportsTablet": true,
+      "bitcode": false,
       "bundleIdentifier": "id.midosaurus.passandi"
     },
     "android": {
+      "permissions": [
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.INTERNET"
+      ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#F8FAFF"
       },
       "predictiveBackGestureEnabled": false,
       "package": "id.midosaurus.passandi"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
@@ -31,7 +36,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/adaptive-icon.png",
+          "image": "./assets/images/icon.png",
           "resizeMode": "contain",
           "imageWidth": 200,
           "backgroundColor": "#F8FAFF",
@@ -40,7 +45,8 @@
           }
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-sqlite"
     ]
   }
 }
