@@ -28,12 +28,6 @@ const TABS: TabConfig[] = [
     iconFill: "grid",
   },
   {
-    name: "qrsync",
-    label: "QR Sync",
-    icon: "qr-code-outline",
-    iconFill: "qr-code",
-  },
-  {
     name: "settings",
     label: "Pengaturan",
     icon: "settings-outline",
@@ -112,7 +106,6 @@ export default function AppLayout() {
     >
       <Tabs.Screen name="vault" />
       <Tabs.Screen name="category" />
-      <Tabs.Screen name="qrsync" />
       <Tabs.Screen name="settings" />
     </Tabs>
   );

@@ -8,7 +8,9 @@ import { ThemeProvider, useTheme } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
-import { usePendingCount } from "../src/shared/lib/sync/usePendingCount";
+import { usePendingCount } from "@/shared/lib/sync/usePendingCount";
+import { useSettingsStore } from "@/features/settings/model/settingsStore";
+
 
 function AuthGate() {
   const initialized = useAuthStore((s) => s.initialized);
@@ -81,9 +83,11 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const initialize = useAuthStore((s) => s.initialize);
+  const initSettings = useSettingsStore((s) => s.init);  // ← tambah
 
   useEffect(() => {
     initialize();
+    initSettings();
   }, []);
 
   return (

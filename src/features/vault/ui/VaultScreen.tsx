@@ -105,10 +105,11 @@ export function VaultScreen() {
 
   const handleItemPress = useCallback((item: VaultItem) => {
     router.push({
-      pathname: "/vault-form",
+      pathname: "/vault-detail",
       params: { id: item.id },
     });
   }, []);
+
   const handleFAB = useCallback(() => {
     router.push({
       pathname: "/vault-form",
@@ -382,6 +383,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "absolute",
     right: 24, bottom: 150,
+    zIndex: 10,
   },
   fabRing: {
     width: 64,

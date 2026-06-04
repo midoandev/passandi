@@ -90,6 +90,69 @@ export default {
     delete_account_sub: "Tidak dapat dibatalkan",
     delete_confirm:
       "Akun dan seluruh data kamu akan dihapus selamanya. Tindakan ini tidak dapat dibatalkan.",
+    // Profile
+    free_plan: "Free Plan",
+    premium_plan: "Premium",
+
+    // Sections
+    section_app: "Pengaturan Aplikasi",
+
+    section_account: "Akun",
+    section_support: "Support & Dukungan",
+
+    // App
+    theme: "Tema",
+    theme_dark: "Gelap",
+    theme_light: "Terang",
+    theme_system: "Ikuti Sistem",
+    language_id: "Indonesia",
+    language_en: "English",
+    notification: "Notifikasi",
+    notification_sub: "Pengingat keamanan",
+
+    // Security
+    change_pin: "Ganti PIN",
+    two_factor: "Two-Factor Authentication",
+    two_factor_sub: "Keamanan login tambahan",
+    auto_lock: "Auto-Lock",
+    auto_lock_sub: "Kunci otomatis setelah tidak aktif",
+    clear_clipboard: "Hapus Clipboard Otomatis",
+    clear_clipboard_sub: "Setelah copy password",
+
+    // Auto lock options
+    lock_immediately: "Segera",
+    lock_1min: "1 menit",
+    lock_5min: "5 menit",
+    lock_15min: "15 menit",
+    lock_never: "Tidak pernah",
+
+    // Clear clipboard options
+    clip_15s: "15 detik",
+    clip_30s: "30 detik",
+    clip_60s: "1 menit",
+    clip_never: "Tidak pernah",
+
+    // Account
+    active_sessions: "Sesi Aktif",
+    active_sessions_sub: "{{count}} device terhubung",
+    export_data: "Export Data",
+    export_data_sub: "Ekspor vault ke file terenkripsi",
+    logout_confirm: "Yakin ingin keluar?",
+
+    // Danger
+    wipe_data: "Hapus Semua Data",
+    wipe_data_sub: "Wipe lokal, akun tetap ada",
+
+    // Support
+    contact_us: "Hubungi Kami",
+    contact_us_sub: "Email support",
+    terms: "Syarat & Ketentuan",
+    privacy: "Kebijakan Privasi",
+    about_sub: "v1.0.0 · Build 1",
+
+    // Premium
+    premium_feature: "Fitur Premium",
+    upgrade: "Upgrade",
   },
   security: {
     step_of: "Langkah {{current}} dari {{total}}",
@@ -152,5 +215,28 @@ export default {
     delete_confirm: "Hapus kategori \"{{name}}\"? Item di dalamnya tidak akan terhapus.",
     info_guide: "Gunakan kategori untuk mengelompokkan kata sandi kamu. Tap + Tambah untuk membuat kategori baru.",
     add_first: "Buat kategori pertamamu",
+  },
+  detail: {
+    title: "Detail Akun",
+    section_account: "Informasi Akun",
+    section_extra: "Informasi Tambahan",
+    section_custom: "Custom Field",
+    copy_success: "Disalin!",
+    copied: "{{field}} disalin ke clipboard",
+    reveal: "Tampilkan",
+    hide: "Sembunyikan",
+    open_url: "Buka Website",
+    edit: "Edit",
+    delete: "Hapus",
+    delete_confirm: "Hapus akun \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+    field_username: "Username",
+    field_email: "Email",
+    field_password: "Password",
+    field_pin: "PIN",
+    field_phone: "Nomor Telepon",
+    field_url: "Website",
+    field_notes: "Catatan",
+    field_holder: "Nama Pemegang",
+    field_expired: "Tanggal Expired",
   },
 } as const;

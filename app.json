@@ -12,7 +12,7 @@
       "icon": "./assets/images/ios.png",
       "supportsTablet": true,
       "bitcode": false,
-      "bundleIdentifier": "id.midosaurus.passandi"
+      "bundleIdentifier": "id.mido.passandi"
     },
     "android": {
       "permissions": [
@@ -24,7 +24,7 @@
         "backgroundColor": "#F8FAFF"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "id.midosaurus.passandi"
+      "package": "id.mido.passandi"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

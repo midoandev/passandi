@@ -12,6 +12,7 @@
     "crypto-js": "^4.2.0",
     "expo": "~56.0.4",
     "expo-auth-session": "~56.0.12",
+    "expo-clipboard": "~56.0.3",
     "expo-constants": "~56.0.15",
     "expo-crypto": "~56.0.4",
     "expo-linking": "~56.0.11",
