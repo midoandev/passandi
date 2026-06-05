@@ -10,6 +10,7 @@ import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
 import { usePendingCount } from "@/shared/lib/sync/usePendingCount";
 import { useSettingsStore } from "@/features/settings/model/settingsStore";
+import { Host } from "@expo/ui";
 
 
 function AuthGate() {

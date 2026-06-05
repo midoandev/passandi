@@ -7,7 +7,7 @@ import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 
 type SettingRowProps = {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   iconBg: string;
   iconColor?: string;
   title: string;
@@ -19,16 +19,16 @@ type SettingRowProps = {
   isPremium?: boolean;
   isDanger?: boolean;
   isFirst?: boolean;
+  rightNode?: React.ReactNode;
 };
 
 export function SettingRow({
   icon, iconBg, iconColor,
   title, subtitle, onPress,
   rightText, switchValue, onSwitch,
-  isPremium, isDanger, isFirst,
+  isPremium, isDanger, isFirst, rightNode,
 }: SettingRowProps) {
   const { tokens } = useTheme();
-
   const titleColor = isDanger ? colors.brand.danger : tokens.text;
 
   return (
@@ -40,12 +40,14 @@ export function SettingRow({
         !isFirst && { borderTopWidth: 0.5, borderTopColor: tokens.border },
       ]}
     >
-      {/* Icon */}
       <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
-        <Text style={styles.iconText}>{icon}</Text>
+        <Ionicons
+          name={icon}
+          size={18}
+          color={iconColor ?? (isDanger ? colors.brand.danger : tokens.text)}
+        />
       </View>
 
-      {/* Body */}
       <View style={styles.body}>
         <Text style={[styles.title, { color: titleColor }]}>
           {title}
@@ -57,8 +59,8 @@ export function SettingRow({
         )}
       </View>
 
-      {/* Right */}
       <View style={styles.right}>
+        {rightNode}
         {isPremium && (
           <View style={styles.premiumBadge}>
             <Ionicons name="star" size={10} color={colors.brand.gold} />
@@ -77,8 +79,12 @@ export function SettingRow({
             {rightText}
           </Text>
         ) : null}
-        {onPress && !onSwitch && (
-          <Ionicons name="chevron-forward" size={16} color={tokens.border} />
+        {onPress && onSwitch === undefined && (
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={tokens.border}
+          />
         )}
       </View>
     </TouchableOpacity>
@@ -112,8 +118,10 @@ export function SettingGroup({ label, children, style }: SettingGroupProps) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", padding: 14, gap: 12 },
-  iconWrap: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  iconText: { fontSize: 16 },
+  iconWrap: {
+    width: 36, height: 36, borderRadius: 10,
+    alignItems: "center", justifyContent: "center",
+  },
   body: { flex: 1 },
   title: { fontSize: 14 },
   sub: { fontSize: 11, marginTop: 2 },

@@ -21,6 +21,7 @@ import {
   useVaultItems,
 } from "../model/useVaultQuery";
 import type { VaultCategory } from "@/entities/vault";
+import { FloatingButton } from "../../../shared/ui";
 
 export function CategoryScreen() {
   const { t } = useTranslation();
@@ -115,29 +116,17 @@ export function CategoryScreen() {
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
-      <AppBar
-        title={t("category.title")}
-        showBack={false}
-        right={
-          <TouchableOpacity
-            onPress={handleAdd}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={[styles.addText, { color: colors.brand.blue }]}>
-              + {t("category.add")}
-            </Text>
-          </TouchableOpacity>
-        }
-      />
-
       <ScrollView
         contentContainerStyle={[styles.scroll, {
+          paddingTop: insets.top + 16,
           paddingBottom: insets.bottom + 120,
         }]}
         showsVerticalScrollIndicator={false}
-        // Disable scroll saat drag
-        scrollEnabled={!draggingId}
       >
+        <Text style={[styles.pageTitle, { color: tokens.text }]}>
+          {t("settings.title")}
+        </Text>
+
         {isLoading ? (
           <SkeletonList count={6} />
         ) : (
@@ -239,6 +228,7 @@ export function CategoryScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { paddingHorizontal: 20, paddingTop: 16 },
+  pageTitle: { fontSize: 26, fontWeight: "600", marginBottom: 20 },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1.5,

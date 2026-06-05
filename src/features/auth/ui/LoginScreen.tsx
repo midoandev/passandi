@@ -137,6 +137,7 @@ export function LoginScreen() {
             onPress={signInGoogle}
             loading={loading}
             variant="outline"
+
           />
 
           {/* Toggle Register/Login */}

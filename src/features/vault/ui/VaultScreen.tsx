@@ -21,10 +21,9 @@ import {
 } from "@/features/vault/model/useVaultQuery";
 import { useVaultUIStore } from "@/features/vault/model/vaultStore";
 import { VaultItemCard } from "./VaultItemCard";
-import { SkeletonList } from "@/shared/ui/SkeletonItem";
 import type { VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
-import { SyncIndicator } from "@/shared/ui/SyncIndicator";
+import { SyncIndicator, FloatingButton, SkeletonList } from "@/shared/ui";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
 
 // Lazy loading config
@@ -158,16 +157,7 @@ export function VaultScreen() {
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
-      <View style={styles.fabWrap}>
-        <View style={[styles.fabRing, { borderColor: tokens.bg }]} />
-        <TouchableOpacity
-          onPress={handleFAB}
-          activeOpacity={0.8}
-          style={styles.fab}
-        >
-          <Ionicons name="add" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      <FloatingButton onPress={handleFAB} />
       <FlatList
         data={visibleItems}
         keyExtractor={(item) => item.id}
@@ -377,31 +367,4 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: "500" },
   emptySub: { fontSize: 13, textAlign: "center" },
   footerLoader: { paddingTop: 4 },
-  fabWrap: {
-    width: 72,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "absolute",
-    right: 24, bottom: 150,
-    zIndex: 10,
-  },
-  fabRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    borderWidth: 6,
-  },
-  fab: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: colors.brand.blue,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: colors.brand.blue,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
-  },
 });
