@@ -47,6 +47,13 @@
       ],
       "expo-web-browser",
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "625d1975-38fc-4bbf-acc2-77cb58f68c0c"
+      }
+    },
+    "owner": "mido_"
   }
 }
