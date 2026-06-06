@@ -4,7 +4,7 @@ import { encrypt, decrypt } from "@/shared/lib/encryption";
 import type { VaultItem, VaultItemForm } from "@/entities/vault";
 
 // Helper: row → VaultItem
-const rowToItem = (row: any, userId: string): VaultItem => ({
+const rowToItem = async (row: any, userId: string): Promise<VaultItem> => ({
   id: row.id,
   userId: row.user_id,
   title: row.title,
@@ -15,8 +15,8 @@ const rowToItem = (row: any, userId: string): VaultItem => ({
   iconColor: row.icon_color,
   username: row.username ?? "",
   email: row.email ?? "",
-  password: row.password ? decrypt(row.password, userId) : "",
-  pin: row.pin ? decrypt(row.pin, userId) : "",
+  password: row.password ? await decrypt(row.password, userId) : "",
+  pin: row.pin ? await decrypt(row.pin, userId) : "",
   phone: row.phone ?? "",
   url: row.url ?? "",
   notes: row.notes ?? "",
@@ -40,7 +40,11 @@ export const getLocalVaultItems = async (
      ORDER BY is_favorite DESC, updated_at DESC`,
     [userId]
   );
-  return rows.map((r) => rowToItem(r, userId));
+  return Promise.all(rows.map((r) => rowToItem(r, userId)));
+};
+
+const generateId = (): string => {
+  return Crypto.randomUUID();
 };
 
 // CREATE
@@ -49,8 +53,11 @@ export const createLocalVaultItem = async (
   form: VaultItemForm
 ): Promise<VaultItem> => {
   const db = await getDb();
-  const id = Crypto.randomUUID();
+  const id = generateId();
   const now = Date.now();
+
+  const encPassword = form.password ? await encrypt(form.password, userId) : null;
+  const encPin = form.pin ? await encrypt(form.pin, userId) : null;
 
   await db.runAsync(
     `INSERT INTO vault_items (
@@ -59,17 +66,15 @@ export const createLocalVaultItem = async (
       username, email, password, pin, phone, url,
       notes, holder_name, expired_date, custom_fields,
       local_sync_status, is_deleted, created_at, updated_at
-    ) VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-    )`,
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       id, userId, form.title, form.categoryId,
       form.isFavorite ? 1 : 0,
       form.iconType, form.iconValue, form.iconColor,
       form.username || null,
       form.email || null,
-      form.password ? encrypt(form.password, userId) : null,
-      form.pin ? encrypt(form.pin, userId) : null,
+      encPassword,
+      encPin,
       form.phone || null,
       form.url || null,
       form.notes || null,
@@ -95,6 +100,14 @@ export const updateLocalVaultItem = async (
   const db = await getDb();
   const now = Date.now();
 
+  const encPassword = form.password !== undefined
+    ? (form.password ? await encrypt(form.password, userId) : null)
+    : undefined;
+
+  const encPin = form.pin !== undefined
+    ? (form.pin ? await encrypt(form.pin, userId) : null)
+    : undefined;
+
   await db.runAsync(
     `UPDATE vault_items SET
       title           = COALESCE(?, title),
@@ -105,8 +118,8 @@ export const updateLocalVaultItem = async (
       icon_color      = COALESCE(?, icon_color),
       username        = ?,
       email           = ?,
-      password        = ?,
-      pin             = ?,
+      password        = COALESCE(?, password),
+      pin             = COALESCE(?, pin),
       phone           = ?,
       url             = ?,
       notes           = ?,
@@ -125,8 +138,8 @@ export const updateLocalVaultItem = async (
       form.iconColor ?? null,
       form.username ?? null,
       form.email ?? null,
-      form.password ? encrypt(form.password, userId) : null,
-      form.pin ? encrypt(form.pin, userId) : null,
+      encPassword ?? null,
+      encPin ?? null,
       form.phone ?? null,
       form.url ?? null,
       form.notes ?? null,
@@ -213,6 +226,13 @@ export const upsertItemFromServer = async (
   const db = await getDb();
   const now = Date.now();
 
+  // Password dari server sudah encrypted — decrypt dulu untuk simpan ke local
+  // (local DB simpan plain, enkripsi ulang saat push ke server)
+  const password = serverItem.password
+    ? await decrypt(serverItem.password, userId) : null;
+  const pin = serverItem.pin
+    ? await decrypt(serverItem.pin, userId) : null;
+
   const existing = await db.getFirstAsync<any>(
     "SELECT * FROM vault_items WHERE server_id = ?",
     [serverItem.id]
@@ -220,7 +240,7 @@ export const upsertItemFromServer = async (
 
   if (existing) {
     const serverTime = new Date(serverItem.updated_at).getTime();
-    if (serverTime <= existing.updated_at) return; // local lebih baru
+    if (serverTime <= existing.updated_at) return;
 
     await db.runAsync(
       `UPDATE vault_items SET
@@ -237,8 +257,8 @@ export const upsertItemFromServer = async (
         serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
         serverItem.username ?? null,
         serverItem.email ?? null,
-        serverItem.password ?? null,
-        serverItem.pin ?? null,
+        password,
+        pin,
         serverItem.phone ?? null,
         serverItem.url ?? null,
         serverItem.notes ?? null,
@@ -259,14 +279,14 @@ export const upsertItemFromServer = async (
         local_sync_status, is_deleted, created_at, updated_at
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
-        Crypto.randomUUID(), serverItem.id, userId,
+        generateId(), serverItem.id, userId,
         serverItem.title, serverItem.category_id,
         serverItem.is_favorite ? 1 : 0,
         serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
         serverItem.username ?? null,
         serverItem.email ?? null,
-        serverItem.password ?? null,
-        serverItem.pin ?? null,
+        password,
+        pin,
         serverItem.phone ?? null,
         serverItem.url ?? null,
         serverItem.notes ?? null,

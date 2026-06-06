@@ -72,8 +72,12 @@ export const createLocalCategory = async (
   icon: string,
   color: string,
 ): Promise<VaultCategory> => {
+  const generateId = (): string => {
+    return Crypto.randomUUID();
+  };
+
   const db = await getDb();
-  const id = Crypto.randomUUID();
+  const id = generateId();
   const existing = await db.getAllAsync<any>(
     "SELECT id FROM vault_categories WHERE user_id = ?", [userId]
   );

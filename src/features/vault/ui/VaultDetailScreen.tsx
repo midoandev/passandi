@@ -148,7 +148,7 @@ export function VaultDetailScreen() {
             <View style={styles.heroBadgeRow}>
               <View style={[styles.heroBadge, { backgroundColor: item.iconColor + "22" }]}>
                 <Text style={[styles.heroBadgeText, { color: item.iconColor }]}>
-                  {item.categoryId}
+                  {item.title}
                 </Text>
               </View>
               {item.isFavorite && (

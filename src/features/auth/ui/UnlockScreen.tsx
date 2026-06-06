@@ -69,7 +69,7 @@ export function UnlockScreen() {
       paddingBottom: insets.bottom + 24,
     }]}>
       <PinPad
-        icon="🔐"
+        icon="shield" iconType="ionicon"
         title={t("unlock.title")}
         subtitle={t("unlock.greeting", { name: firstName })}
         pin={pin}

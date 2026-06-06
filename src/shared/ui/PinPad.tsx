@@ -34,7 +34,7 @@ type PinPadProps = {
 };
 
 export function PinPad({
-  icon = "🔐",
+  icon = "shield",
   iconType = "emoji",
   title,
   subtitle,

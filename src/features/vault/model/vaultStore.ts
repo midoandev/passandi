@@ -17,7 +17,7 @@ export const useVaultUIStore = create<VaultUIState>((set) => ({
   searchQuery: "",
   isSearchVisible: false,
 
-  setCategory: (id) => set({ selectedCategoryId: id }),
+  setCategory: (id) => set((state) => ({ selectedCategoryId: state.selectedCategoryId === id ? "" : id })),
   setSearchQuery: (q) => set({ searchQuery: q }),
   toggleSearch: () => set((s) => ({ isSearchVisible: !s.isSearchVisible })),
 }));

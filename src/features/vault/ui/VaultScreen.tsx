@@ -257,7 +257,6 @@ export function VaultScreen() {
               </View>
             )}
 
-            {/* Category Chips */}
             <FlatList
               data={categories}
               horizontal

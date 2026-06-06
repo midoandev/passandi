@@ -32,8 +32,8 @@ const DEFAULT_FORM: VaultItemForm = {
   title: "",
   categoryId: "other",
   isFavorite: false,
-  iconType: "emoji",
-  iconValue: "🔐",
+  iconType: "ionicon",
+  iconValue: "shield",
   iconColor: ICON_COLORS[0],
   username: "",
   email: "",
@@ -252,10 +252,10 @@ export function VaultFormScreen() {
                 form.categoryId === cat.id
                   ? { backgroundColor: colors.brand.blue }
                   : {
-                      backgroundColor: tokens.surface,
-                      borderWidth: 0.5,
-                      borderColor: tokens.border,
-                    },
+                    backgroundColor: tokens.surface,
+                    borderWidth: 0.5,
+                    borderColor: tokens.border,
+                  },
               ]}
             >
               <Text style={styles.catIcon}>{cat.icon}</Text>
