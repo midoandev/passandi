@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
-import { AppBar } from "@/shared/ui/AppBar";
 import { SkeletonList } from "@/shared/ui/SkeletonItem";
 import { CategoryFormSheet } from "./CategoryFormSheet";
 import { DraggableCategoryRow } from "./DraggableCategoryRow";
@@ -124,7 +123,7 @@ export function CategoryScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.pageTitle, { color: tokens.text }]}>
-          {t("settings.title")}
+          {t("category.title")}
         </Text>
 
         {isLoading ? (

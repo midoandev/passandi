@@ -10,7 +10,6 @@ import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
 import { usePendingCount } from "@/shared/lib/sync/usePendingCount";
 import { useSettingsStore } from "@/features/settings/model/settingsStore";
-import { Host } from "@expo/ui";
 
 
 function AuthGate() {
@@ -38,9 +37,10 @@ function AuthGate() {
 
       try {
 
-        // Kondisi 1 — tidak ada session
+        // Kondisi 1 — tidak ada session (user belum login)
+        // Karena splash screen sudah menangani arah masuk, cukup arahkan ke unlock
         if (!session || !user) {
-          if (!inAuthGroup) router.replace("/(auth)/login");
+          if (!inAuthGroup) router.replace("/(auth)/unlock");
           return;
         }
 
