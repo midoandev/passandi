@@ -37,10 +37,10 @@ export function AboutScreen() {
             <Text style={styles.appIconText}>🔐</Text>
           </View>
           <Text style={[styles.appName, { color: tokens.text }]}>
-            {t("about.app_name")}
+            {t("common.app_name")}
           </Text>
           <Text style={[styles.tagline, { color: tokens.muted }]}>
-            {t("about.tagline")}
+            {t("common.tagline")}
           </Text>
           <View style={[styles.versionBadge, {
             backgroundColor: tokens.surface,

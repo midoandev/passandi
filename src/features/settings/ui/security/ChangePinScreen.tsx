@@ -54,8 +54,8 @@ export function ChangePinScreen() {
           setIsError(true);
         } else {
           await setupPin(user.id, newPin);
-          Alert.alert(t("common.success"), "PIN berhasil diperbarui.", [
-            { text: "OK", onPress: () => router.back() },
+          Alert.alert(t("common.success"), t("change_pin.success"), [
+            { text: t("common.ok"), onPress: () => router.back() },
           ]);
         }
       }
@@ -66,18 +66,18 @@ export function ChangePinScreen() {
 
   const stepConfig: Record<Step, { title: string; subtitle: string; step: number }> = {
     verify: {
-      title: "Masukkan PIN Saat Ini",
-      subtitle: "Verifikasi identitas kamu",
+      title: t("change_pin.step_current"),
+      subtitle: t("change_pin.step_current_sub"),
       step: 1,
     },
     new: {
-      title: "Buat PIN Baru",
-      subtitle: "Masukkan 6 digit PIN baru",
+      title: t("change_pin.step_new"),
+      subtitle: t("change_pin.step_new_sub"),
       step: 2,
     },
     confirm: {
-      title: "Konfirmasi PIN Baru",
-      subtitle: "Ulangi PIN baru kamu",
+      title: t("change_pin.step_confirm"),
+      subtitle: t("change_pin.step_confirm_sub"),
       step: 3,
     },
   };

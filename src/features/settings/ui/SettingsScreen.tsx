@@ -1,6 +1,7 @@
 import {
   View, Text, ScrollView,
   TouchableOpacity, StyleSheet,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -10,18 +11,78 @@ import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { SettingRow, SettingGroup } from "./components/SettingRow";
+import { resetAndSeed, clearRemoteVaultData, clearLocalVaultData }
+  from "@/shared/lib/database/seeder";
+import { useQueryClient } from "@tanstack/react-query";
+import { VAULT_KEY } from "@/features/vault/model/useVaultQuery";
+import { useState } from "react";
 
 export function SettingsScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((s) => s.user?.id ?? "");
+  const [seeding, setSeeding] = useState(false);
 
   const userName = user?.user_metadata?.full_name
     ?? user?.email?.split("@")[0]
-    ?? "Pengguna";
+    ?? t("common.default_username");
   const userEmail = user?.email ?? "";
 
+
+  const handleResetAndSeed = async () => {
+    Alert.alert(
+      "Reset & Seed Data",
+      "Semua vault item akan dihapus (lokal + Supabase) lalu dibuat ulang dengan 25 data test. Lanjutkan?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Reset & Seed",
+          style: "destructive",
+          onPress: async () => {
+            setSeeding(true);
+            try {
+              const count = await resetAndSeed(userId);
+              await queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
+              Alert.alert("Selesai", `${count} akun test berhasil dibuat.`);
+            } catch (e) {
+              Alert.alert("Error", String(e));
+            }
+            setSeeding(false);
+          },
+        },
+      ]
+    );
+  };
+
+  // Handler hapus semua saja (tanpa seed)
+  const handleClearAll = async () => {
+    Alert.alert(
+      "Hapus Semua Data Test",
+      "Semua vault item akan dihapus dari lokal dan Supabase.",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: async () => {
+            setSeeding(true);
+            try {
+              await clearLocalVaultData(userId);
+              await clearRemoteVaultData(userId);
+              await queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
+              Alert.alert("Selesai", "Semua data berhasil dihapus.");
+            } catch (e) {
+              Alert.alert("Error", String(e));
+            }
+            setSeeding(false);
+          },
+        },
+      ]
+    );
+  };
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
       <ScrollView
@@ -67,7 +128,7 @@ export function SettingsScreen() {
           }]}>
             <Ionicons name="star-outline" size={11} color={colors.brand.gold} />
             <Text style={[styles.planText, { color: colors.brand.gold }]}>
-              {t("settings.free_plan")}
+              {t("common.free_plan")}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={tokens.border} />
@@ -114,6 +175,28 @@ export function SettingsScreen() {
           />
         </SettingGroup>
 
+        {__DEV__ && (
+
+          <SettingGroup style={styles.menuGroup}>
+            <SettingRow
+              icon="refresh-outline"
+              iconBg="#8B5CF622"
+              iconColor="#A78BFA"
+              title={seeding ? "Memproses..." : "Reset & Seed 25 Data Test"}
+              subtitle="Hapus semua → buat ulang dengan data dummy"
+              onPress={seeding ? undefined : handleResetAndSeed}
+            />
+            <SettingRow
+              icon="trash-outline"
+              iconBg="#EF444422"
+              iconColor="#EF4444"
+              title="Hapus Semua Data Test"
+              subtitle="Clear lokal + Supabase"
+              onPress={seeding ? undefined : handleClearAll}
+              isDanger
+            />
+          </SettingGroup>
+        )}
         {/* App version kecil di bawah */}
         <Text style={[styles.version, { color: tokens.subtle }]}>
           Passandi · {t("settings.about_sub")}

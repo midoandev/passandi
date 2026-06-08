@@ -20,7 +20,9 @@ import {
   useVaultItems,
 } from "../model/useVaultQuery";
 import type { VaultCategory } from "@/entities/vault";
-import { FloatingButton } from "../../../shared/ui";
+import {
+  isAllCategory, isFavoriteCategory,
+} from "@/shared/config/categoryHelpers";
 
 export function CategoryScreen() {
   const { t } = useTranslation();
@@ -40,17 +42,19 @@ export function CategoryScreen() {
   const reorderCategories = useReorderCategories();
 
   const defaultCategories = categories.filter((c) => c.isDefault);
-  const customCategories = categories.filter((c) => !c.isDefault);
-
+  const customCategories = categories.filter(
+    (c) => !c.isDefault && c.id !== "all" && c.id !== "favorite"
+  );
   // Sync local state saat data dari server berubah
   useEffect(() => {
     setLocalCustom(customCategories);
   }, [categories]);
 
-  const getItemCount = useCallback((categoryId: string) => {
-    if (categoryId === "all") return vaultItems.length;
-    if (categoryId === "favorite") return vaultItems.filter((i) => i.isFavorite).length;
-    return vaultItems.filter((i) => i.categoryId === categoryId).length;
+  // getItemCount — pakai label
+  const getItemCount = useCallback((cat: VaultCategory) => {
+    if (isAllCategory(cat)) return vaultItems.length;
+    if (isFavoriteCategory(cat)) return vaultItems.filter((i) => i.isFavorite).length;
+    return vaultItems.filter((i) => i.categoryId === cat.id).length;
   }, [vaultItems]);
 
   const handleDragStart = useCallback((id: string) => {
@@ -141,8 +145,9 @@ export function CategoryScreen() {
                   item={cat}
                   index={index}
                   totalCount={defaultCategories.length}
-                  itemCount={getItemCount(cat.id)}
+                  itemCount={getItemCount(cat)}
                   isDragging={draggingId === cat.id}
+                  isSystem={["Semua", "Favorit"].includes(cat.label)}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onEdit={handleEdit}
@@ -167,8 +172,9 @@ export function CategoryScreen() {
                     item={cat}
                     index={index}
                     totalCount={localCustom.length}
-                    itemCount={getItemCount(cat.id)}
+                    itemCount={getItemCount(cat)}
                     isDragging={draggingId === cat.id}
+                    isSystem={["Semua", "Favorit"].includes(cat.label)}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onEdit={handleEdit}

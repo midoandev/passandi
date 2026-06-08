@@ -84,7 +84,7 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const initialize = useAuthStore((s) => s.initialize);
-  const initSettings = useSettingsStore((s) => s.init);  // ← tambah
+  const initSettings = useSettingsStore((s) => s.init);
 
   useEffect(() => {
     initialize();

@@ -162,12 +162,28 @@ export const deleteLocalVaultItem = async (
   id: string
 ): Promise<void> => {
   const db = await getDb();
+
+  console.log("DB delete:", { userId, id });
+
+  const existing = await db.getFirstAsync<any>(
+    "SELECT id FROM vault_items WHERE id = ? AND user_id = ?",
+    [id, userId]
+  );
+
+  console.log("Found for delete:", existing);
+
+  if (!existing) {
+    throw new Error(`Item ${id} tidak ditemukan untuk user ${userId}`);
+  }
+
   await db.runAsync(
     `UPDATE vault_items
      SET is_deleted = 1, local_sync_status = 'pending', updated_at = ?
      WHERE id = ? AND user_id = ?`,
     [Date.now(), id, userId]
   );
+
+  console.log("Delete done");
 };
 
 // TOGGLE FAVORITE

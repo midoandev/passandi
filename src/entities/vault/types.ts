@@ -51,7 +51,6 @@ export type VaultItemForm = Omit<
   "id" | "userId" | "createdAt" | "updatedAt"
 >;
 
-// Category
 export type VaultCategory = {
   id: string;
   userId: string;
@@ -61,3 +60,7 @@ export type VaultCategory = {
   sortOrder: number;
   isDefault: boolean;
 };
+
+// Helper constants
+export const SORT_ORDER_ALL = 0;  // Semua
+export const SORT_ORDER_FAVORITE = 1;  // Favorit

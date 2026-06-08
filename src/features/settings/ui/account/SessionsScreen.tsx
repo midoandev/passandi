@@ -4,14 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { AppBar } from "@/shared/ui/AppBar";
+import { useTranslation } from "react-i18next";
 
 export function SessionsScreen() {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
-      <AppBar title="Sesi Aktif" />
+      <AppBar title={t("settings.active_sessions")} />
 
       <View style={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
 
@@ -27,17 +29,16 @@ export function SessionsScreen() {
           </View>
 
           <Text style={[styles.title, { color: tokens.text }]}>
-            Multi-Device Support
+            {t("sessions.coming_soon_title")}
           </Text>
           <Text style={[styles.subtitle, { color: tokens.muted }]}>
-            Fitur ini sedang dalam pengembangan.{"\n"}
-            Kamu akan bisa melihat semua device yang login, mencabut akses, dan scan QR untuk buka Passandi di browser laptop.
+            {t("sessions.coming_soon_desc")}
           </Text>
 
           <View style={[styles.badge, { backgroundColor: colors.brand.blue + "22" }]}>
             <Ionicons name="time-outline" size={13} color={colors.brand.blue} />
             <Text style={[styles.badgeText, { color: colors.brand.blue }]}>
-              Coming Soon
+              {t("sessions.coming_soon_badge")}
             </Text>
           </View>
         </View>
@@ -53,7 +54,7 @@ export function SessionsScreen() {
             color={colors.brand.blue}
           />
           <Text style={[styles.infoText, { color: tokens.muted }]}>
-            Saat ini Passandi mendukung login di beberapa perangkat mobile sekaligus menggunakan akun yang sama.
+            {t("sessions.info_text")}
           </Text>
         </View>
 

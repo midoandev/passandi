@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { AppInput } from "@/shared/ui/AppInput";
+import { useTranslation } from "react-i18next";
 import type { CustomField } from "@/entities/vault";
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function CustomFieldItem({ field, onUpdate, onDelete }: Props) {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
 
   return (
@@ -25,14 +27,14 @@ export function CustomFieldItem({ field, onUpdate, onDelete }: Props) {
       ]}
     >
       <AppInput
-        label="Label Field"
-        placeholder="contoh: Kode Recovery"
+        label={t("vault.custom_field_label")}
+        placeholder={t("vault.custom_field_label_placeholder")}
         value={field.label}
         onChangeText={(v) => onUpdate({ ...field, label: v })}
       />
       <AppInput
-        label="Nilai"
-        placeholder="Isi nilai field"
+        label={t("vault.custom_field_value")}
+        placeholder={t("vault.custom_field_value_placeholder")}
         value={field.value}
         isPassword={field.isSecret}
         onChangeText={(v) => onUpdate({ ...field, value: v })}
@@ -40,7 +42,7 @@ export function CustomFieldItem({ field, onUpdate, onDelete }: Props) {
       <View style={styles.footer}>
         <View style={styles.secretRow}>
           <Text style={[styles.secretLabel, { color: tokens.muted }]}>
-            Sembunyikan nilai
+            {t("vault.custom_field_hide_value")}
           </Text>
           <Switch
             value={field.isSecret}

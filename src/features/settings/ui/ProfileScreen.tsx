@@ -77,7 +77,7 @@ export function ProfileScreen() {
           borderColor: tokens.border,
         }]}>
           <AppInput
-            label={t("profile.full_name")}
+            label={t("common.name")}
             placeholder={t("profile.full_name_placeholder")}
             value={name}
             onChangeText={setName}
@@ -87,7 +87,7 @@ export function ProfileScreen() {
           {/* Email — read only */}
           <View style={styles.emailWrap}>
             <Text style={[styles.emailLabel, { color: tokens.muted }]}>
-              {t("profile.email")}
+              {t("common.email")}
             </Text>
             <View style={[styles.emailField, {
               backgroundColor: tokens.bg,
@@ -104,7 +104,7 @@ export function ProfileScreen() {
           </View>
 
           <AppButton
-            label={t("profile.save")}
+            label={t("common.save")}
             onPress={handleSave}
             loading={loading}
             style={styles.saveBtn}
@@ -122,7 +122,7 @@ export function ProfileScreen() {
                 {t("profile.plan_title")}
               </Text>
               <Text style={[styles.planName, { color: tokens.text }]}>
-                {t("profile.plan_free")}
+                {t("common.free_plan")}
               </Text>
               <Text style={[styles.planSub, { color: tokens.subtle }]}>
                 {t("profile.plan_free_sub")}
@@ -134,7 +134,7 @@ export function ProfileScreen() {
             }]}>
               <Ionicons name="star-outline" size={14} color={colors.brand.gold} />
               <Text style={[styles.planBadgeText, { color: colors.brand.gold }]}>
-                Free
+                {t("common.free_plan")}
               </Text>
             </View>
           </View>

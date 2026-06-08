@@ -1,22 +1,77 @@
 export default {
+  // ── Common ──────────────────────────────────────────────────
+  // Shared across ALL features — single source of truth
   common: {
+    // App
     app_name: "Passandi",
     tagline: "Melawan Rumitnya Keamanan",
+
+    // Actions
     save: "Simpan",
     cancel: "Batal",
     delete: "Hapus",
     confirm: "Konfirmasi",
+    edit: "Edit",
+    add: "Tambah",
+    ok: "OK",
+    or: "atau",
+    back: "Kembali",
+
+    // States
     loading: "Memuat...",
     error: "Terjadi kesalahan",
     success: "Berhasil",
     info: "Informasi",
+
+    // Visibility
+    hide: "Sembunyikan",
+    show: "Tampilkan",
+
+    // Auth fields
+    email: "Email",
+    password: "Password",
+    username: "Username",
+    name: "Nama Lengkap",
+    pin: "PIN",
+    notes: "Catatan",
+    phone: "Nomor Telepon",
+    url: "Website",
+
+    // Field labels
+    holder: "Nama Pemegang",
+    expiry_date: "Tanggal Expired",
+    custom_fields: "Custom Field",
+    account_info: "Informasi Akun",
+    extra_info: "Informasi Tambahan",
+
+    // Vault
+    all: "Semua",
+    favorite: "Favorit",
+
+    // Plans
+    free_plan: "Free Plan",
+    premium: "Premium",
+
+    // Navigation
+    choose_icon: "Pilih Ikon",
+    choose_color: "Pilih Warna",
+
+    // Auth messages
+    logout: "Logout",
+    logout_confirm: "Yakin ingin keluar?",
+    error_empty: "Semua field wajib diisi.",
+    error_not_match: "Kata sandi tidak cocok.",
+    error_min_length: "Minimal 8 karakter.",
+
+    // Misc
+    default_username: "Pengguna",
   },
+
+  // ── Auth ────────────────────────────────────────────────────
   auth: {
     login: "Masuk ke Akun",
     register: "Buat Akun Baru",
-    email: "Email",
     email_placeholder: "nama@email.com",
-    password: "Kata Sandi Utama",
     password_placeholder: "Minimal 8 karakter",
     btn_login: "Masuk",
     btn_register: "Daftar",
@@ -25,25 +80,20 @@ export default {
     no_account: "Belum punya akun?",
     go_login: "Masuk",
     go_register: "Daftar",
-    logout_confirm: "Yakin ingin keluar?",
-    logout: "Logout",
-    name: "Nama Lengkap",
     name_placeholder: "Masukkan nama lengkap",
     confirm_password: "Konfirmasi Kata Sandi",
     confirm_password_placeholder: "Ulangi kata sandi",
-    error_empty: "Semua field wajib diisi.",
-    error_password_match: "Kata sandi tidak cocok.",
-    error_password_length: "Kata sandi minimal 8 karakter.",
     register_success: "Akun berhasil dibuat! Silakan masuk.",
+    master_password: "Kata Sandi Utama",
   },
+
+  // ── Vault ───────────────────────────────────────────────────
   vault: {
     title: "Brankas",
     search: "Cari akun...",
     greeting: "Selamat datang,",
     empty_title: "Belum ada akun",
     empty_sub: "Tap + untuk menambahkan akun pertamamu",
-    favorite: "FAVORIT",
-    all: "Semua",
     section_all: "SEMUA AKUN",
     items_count: "item",
     add_item: "Tambah Akun",
@@ -52,23 +102,39 @@ export default {
     section_extra: "Info Tambahan",
     section_account_info: "Informasi Akun",
     section_extra_info: "Informasi Tambahan",
-    section_custom_fields: "Custom Field",
     field_title: "Nama Akun",
     field_title_placeholder: "contoh: BCA Mobile",
     field_category: "Kategori",
-    field_username: "Username",
-    field_email: "Email",
-    field_password: "Password",
-    field_pin: "PIN",
-    field_phone: "Nomor Telepon",
-    field_url: "URL / Website",
-    field_holder_name: "Nama Pemegang",
-    field_expired_date: "Tanggal Expired",
-    field_notes: "Catatan",
+    field_username_placeholder: "username / email",
+    field_email_placeholder: "email@domain.com",
+    field_password_placeholder: "••••••••",
+    field_pin_placeholder: "••••",
+    field_phone_placeholder: "08xxxxxxxxxx",
+    field_url_placeholder: "https://...",
+    field_holder_name_placeholder: "Nama pemegang",
+    field_expired_date_placeholder: "MM/YYYY",
+    field_notes_placeholder: "Catatan...",
     add_custom_field: "Tambah Custom Field",
     mark_favorite: "Tandai Favorit",
     error_title_required: "Nama akun wajib diisi.",
+    error_save: "Gagal menyimpan",
+    custom_field_label: "Label Field",
+    custom_field_label_placeholder: "contoh: Kode Recovery",
+    custom_field_value: "Nilai",
+    custom_field_value_placeholder: "Isi nilai field",
+    custom_field_hide_value: "Sembunyikan nilai",
+    icon_bg_color: "Warna Background",
+    icon_pick_color: "Pilih Warna Solid",
+    icon_group_finance: "Keuangan",
+    icon_group_social: "Sosial Media",
+    icon_group_security: "Keamanan",
+    icon_group_shopping: "Shopping",
+    icon_group_other: "Lainnya",
+    icon_group_communication: "Komunikasi",
+    icon_group_general: "Umum",
   },
+
+  // ── Settings ────────────────────────────────────────────────
   settings: {
     title: "Pengaturan",
     section_display: "Tampilan",
@@ -81,7 +147,6 @@ export default {
     biometric_sub: "FaceID / Sidik Jari",
     master_password: "Ganti Master Password",
     about: "Tentang Aplikasi",
-    logout: "Logout",
     wipe: "Hapus Semua Data",
     wipe_sub: "Wipe data di perangkat ini",
     wipe_confirm:
@@ -90,13 +155,9 @@ export default {
     delete_account_sub: "Tidak dapat dibatalkan",
     delete_confirm:
       "Akun dan seluruh data kamu akan dihapus selamanya. Tindakan ini tidak dapat dibatalkan.",
-    free_plan: "Free Plan",
-    premium_plan: "Premium",
     section_app: "Aplikasi",
     section_account: "Akun",
     section_support: "Support & Dukungan",
-
-    // App
     theme: "Tema",
     theme_dark: "Gelap",
     theme_light: "Terang",
@@ -105,8 +166,6 @@ export default {
     language_en: "English",
     notification: "Notifikasi",
     notification_sub: "Pengingat keamanan",
-
-    // Security
     change_pin: "Ganti PIN",
     two_factor: "Two-Factor Authentication",
     two_factor_sub: "Keamanan login tambahan",
@@ -114,42 +173,33 @@ export default {
     auto_lock_sub: "Kunci otomatis setelah tidak aktif",
     clear_clipboard: "Hapus Clipboard Otomatis",
     clear_clipboard_sub: "Setelah copy password",
-
-    // Auto lock options
     lock_immediately: "Segera",
     lock_1min: "1 menit",
     lock_5min: "5 menit",
     lock_15min: "15 menit",
     lock_never: "Tidak pernah",
-
-    // Clear clipboard options
     clip_15s: "15 detik",
     clip_30s: "30 detik",
     clip_60s: "1 menit",
     clip_never: "Tidak pernah",
-
-    // Account
     active_sessions: "Sesi Aktif",
     active_sessions_sub: "{{count}} device terhubung",
     export_data: "Export Data",
     export_data_sub: "Ekspor vault ke file terenkripsi",
-    logout_confirm: "Yakin ingin keluar?",
-
-    // Danger
     wipe_data: "Hapus Semua Data",
     wipe_data_sub: "Wipe lokal, akun tetap ada",
-
-    // Support
     contact_us: "Hubungi Kami",
     contact_us_sub: "Email support",
     terms: "Syarat & Ketentuan",
     privacy: "Kebijakan Privasi",
     about_sub: "v1.0.0 · Build 1",
-
-    // Premium
     premium_feature: "Fitur Premium",
+    premium_feature_desc: "Fitur ini tersedia di Passandi Premium.",
     upgrade: "Upgrade",
+    danger_warning: "⚠️ Tindakan di halaman ini bersifat permanen dan tidak dapat dibatalkan.",
   },
+
+  // ── Security (Setup Flow) ───────────────────────────────────
   security: {
     step_of: "Langkah {{current}} dari {{total}}",
     master_password_title: "Buat Master Password",
@@ -164,9 +214,6 @@ export default {
     strength_good: "Kuat",
     strength_strong: "Sangat Kuat",
     btn_continue: "Lanjutkan →",
-    error_empty: "Semua field wajib diisi.",
-    error_min_length: "Minimal 8 karakter.",
-    error_not_match: "Kata sandi tidak cocok.",
     pin_title: "Buat PIN 6 Digit",
     pin_subtitle: "Untuk masuk lebih cepat setiap harinya",
     pin_confirm_title: "Konfirmasi PIN",
@@ -177,79 +224,70 @@ export default {
       "Akun kamu sudah terlindungi. Selamat datang di Passandi.",
     btn_enter_vault: "Masuk ke Brankas",
   },
+
+  // ── Unlock ──────────────────────────────────────────────────
   unlock: {
     title: "Masukkan PIN",
     greeting: "Halo, {{name}} 👋",
     use_biometric: "Gunakan Biometrik",
     use_pin: "Gunakan PIN",
     biometric_prompt: "Konfirmasi identitas kamu",
-    cancel: "Batal",
     switch_account: "Ganti Akun",
   },
+
+  // ── Category ────────────────────────────────────────────────
   category: {
-    all: "Semua",
-    favorite: "Favorit ⭐",
+    title: "Kategori",
     bank: "Bank",
     sosmed: "Sosmed",
     ewallet: "E-Wallet",
     work: "Work",
     hiburan: "Hiburan",
     shopping: "Shopping",
-    title: "Kategori",
-    add: "Tambah",
     edit: "Edit Kategori",
     btn_add: "Buat Kategori",
     section_default: "Bawaan",
     section_custom: "Kustom",
     name_label: "Nama Kategori",
     name_placeholder: "contoh: Keuangan",
-    choose_icon: "Pilih Ikon",
-    choose_color: "Pilih Warna",
     delete_title: "Hapus Kategori",
     delete_confirm: "Hapus kategori \"{{name}}\"? Item di dalamnya tidak akan terhapus.",
     info_guide: "Gunakan kategori untuk mengelompokkan kata sandi kamu. Tap + Tambah untuk membuat kategori baru.",
     add_first: "Buat kategori pertamamu",
   },
+
+  // ── Detail ──────────────────────────────────────────────────
   detail: {
     title: "Detail Akun",
     section_account: "Informasi Akun",
     section_extra: "Informasi Tambahan",
-    section_custom: "Custom Field",
     copy_success: "Disalin!",
     copied: "{{field}} disalin ke clipboard",
-    reveal: "Tampilkan",
-    hide: "Sembunyikan",
     open_url: "Buka Website",
-    edit: "Edit",
-    delete: "Hapus",
     delete_confirm: "Hapus akun \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
-    field_username: "Username",
-    field_email: "Email",
-    field_password: "Password",
-    field_pin: "PIN",
-    field_phone: "Nomor Telepon",
-    field_url: "Website",
-    field_notes: "Catatan",
-    field_holder: "Nama Pemegang",
-    field_expired: "Tanggal Expired",
+    error_not_found: "Item tidak ditemukan",
+    error_open_url: "Tidak bisa membuka URL ini.",
+    created_at: "Dibuat:",
+    updated_at: "Diperbarui:",
   },
+
+  // ── Profile ─────────────────────────────────────────────────
   profile: {
     title: "Profil",
     full_name: "Nama Lengkap",
     full_name_placeholder: "Masukkan nama lengkap",
-    email: "Email",
     email_note: "Email tidak dapat diubah",
     member_since: "Bergabung sejak",
     save: "Simpan Perubahan",
     save_success: "Profil berhasil diperbarui",
     plan_title: "Plan Kamu",
-    plan_free: "Free Plan",
     plan_free_sub: "Akses fitur dasar Passandi",
-    plan_premium: "Premium",
     plan_premium_sub: "Semua fitur tanpa batas",
     upgrade_btn: "Upgrade ke Premium",
     upgrade_desc: "Dapatkan 2FA, Export Data, dan lebih banyak lagi",
   },
+
+  // ── Change PIN ──────────────────────────────────────────────
   change_pin: {
     title: "Ganti PIN",
     current_pin: "PIN Saat Ini",
@@ -261,19 +299,39 @@ export default {
     error_wrong: "PIN saat ini salah",
     error_match: "PIN baru tidak cocok",
     step_current: "Verifikasi PIN Lama",
+    step_current_sub: "Masukkan PIN saat ini",
     step_new: "Buat PIN Baru",
+    step_new_sub: "Masukkan 6 digit PIN baru",
     step_confirm: "Konfirmasi PIN Baru",
+    step_confirm_sub: "Ulangi PIN baru kamu",
   },
+
+  // ── Sessions ────────────────────────────────────────────────
+  sessions: {
+    coming_soon_title: "Multi-Device Support",
+    coming_soon_desc: "Fitur ini sedang dalam pengembangan.\nKamu akan bisa melihat semua device yang login, mencabut akses, dan scan QR untuk buka Passandi di browser laptop.",
+    coming_soon_badge: "Coming Soon",
+    info_text: "Saat ini Passandi mendukung login di beberapa perangkat mobile sekaligus menggunakan akun yang sama.",
+  },
+
+  // ── Sync ────────────────────────────────────────────────────
+  sync: {
+    offline: "Offline",
+    syncing: "Menyinkron...",
+    synced: "Tersinkron",
+    error: "Gagal sync",
+    pending: "pending",
+  },
+
+  // ── About ───────────────────────────────────────────────────
   about: {
     title: "Tentang Passandi",
     version: "Versi",
     build: "Build",
-    tagline: "Melawan Rumitnya Keamanan",
     description: "Passandi adalah aplikasi pengelola kata sandi yang mengutamakan keamanan dan kemudahan. Data kamu tersimpan terenkripsi dan selalu tersinkronisasi.",
     made_with: "Dibuat dengan ❤️ di Indonesia",
     section_info: "Informasi Aplikasi",
     section_legal: "Legal",
-    app_name: "Passandi",
     platform: "Platform",
     platform_val: "iOS & Android",
     open_source: "Open Source Libraries",

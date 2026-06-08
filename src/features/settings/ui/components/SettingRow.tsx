@@ -5,6 +5,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type SettingRowProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -28,6 +29,7 @@ export function SettingRow({
   rightText, switchValue, onSwitch,
   isPremium, isDanger, isFirst, rightNode,
 }: SettingRowProps) {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const titleColor = isDanger ? colors.brand.danger : tokens.text;
 
@@ -64,7 +66,7 @@ export function SettingRow({
         {isPremium && (
           <View style={styles.premiumBadge}>
             <Ionicons name="star" size={10} color={colors.brand.gold} />
-            <Text style={styles.premiumText}>Premium</Text>
+            <Text style={styles.premiumText}>{t("common.premium")}</Text>
           </View>
         )}
         {onSwitch !== undefined ? (

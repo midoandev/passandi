@@ -80,7 +80,7 @@ export function CategoryFormSheet({
           {/* Header */}
           <View style={styles.sheetHeader}>
             <Text style={[styles.sheetTitle, { color: tokens.text }]}>
-              {editItem ? t("category.edit") : t("category.add")}
+              {editItem ? t("common.edit") : t("common.add")}
             </Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={22} color={tokens.muted} />
@@ -118,7 +118,7 @@ export function CategoryFormSheet({
 
             {/* Pilih Emoji */}
             <Text style={[styles.sectionLabel, { color: tokens.muted }]}>
-              {t("category.choose_icon")}
+              {t("common.choose_icon")}
             </Text>
             <View style={styles.emojiGrid}>
               {EMOJI_OPTIONS.map((e) => (
@@ -137,7 +137,7 @@ export function CategoryFormSheet({
 
             {/* Pilih Warna */}
             <Text style={[styles.sectionLabel, { color: tokens.muted }]}>
-              {t("category.choose_color")}
+              {t("common.choose_color")}
             </Text>
             <View style={styles.colorRow}>
               {COLOR_OPTIONS.map((c) => (

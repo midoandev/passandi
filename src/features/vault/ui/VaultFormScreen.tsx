@@ -16,7 +16,7 @@ import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { AppBar } from "@/shared/ui/AppBar";
 import { AppInput } from "@/shared/ui/AppInput";
-import { AppButton } from "@/shared/ui/AppButton";
+import { isSystemCategory } from "@/shared/config/categoryHelpers";
 import { IconPickerSheet } from "./IconPickerSheet";
 import { CustomFieldItem } from "./CustomFieldItem";
 import {
@@ -27,6 +27,7 @@ import {
 import type { VaultItemForm, CustomField, IconType } from "@/entities/vault";
 import { ICON_COLORS } from "../model/iconData";
 import { useVaultItems } from "../model/useVaultQuery";
+import { AppButton } from "../../../shared/ui";
 
 const DEFAULT_FORM: VaultItemForm = {
   title: "",
@@ -134,7 +135,7 @@ export function VaultFormScreen() {
       router.back();
     } catch (e: any) {
       console.log("Save error:", e); // ← lihat error detail di console
-      Alert.alert(t("common.error"), e?.message ?? "Gagal menyimpan");
+      Alert.alert(t("common.error"), e?.message ?? t("vault.error_save"));
     }
   };
 
@@ -193,7 +194,7 @@ export function VaultFormScreen() {
               { color: activeSection === s ? "#fff" : tokens.muted },
             ]}
           >
-            {s === "main" ? t("vault.section_main") : t("vault.section_extra")}
+            {s === "main" ? t("vault.section_main") : t("common.extra_info")}
           </Text>
         </TouchableOpacity>
       ))}
@@ -213,7 +214,7 @@ export function VaultFormScreen() {
             onChangeText={(v) => update("title", v)}
           />
           {/* Favorite Toggle */}
-          <View style={styles.favoriteRow}>
+          {/* <View style={styles.favoriteRow}>
             <Ionicons
               name={form.isFavorite ? "star" : "star-outline"}
               size={16}
@@ -228,7 +229,7 @@ export function VaultFormScreen() {
               trackColor={{ true: colors.brand.gold, false: tokens.border }}
               thumbColor="#fff"
             />
-          </View>
+          </View> */}
         </View>
       </View>
 
@@ -236,13 +237,14 @@ export function VaultFormScreen() {
       <Text style={[styles.fieldLabel, { color: tokens.muted }]}>
         {t("vault.field_category")}
       </Text>
+      {/* Category Chips di form — exclude all & favorite */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.catList}
       >
         {categories
-          .filter((c) => !["all", "favorite"].includes(c.id))
+          .filter((c) => !isSystemCategory(c))
           .map((cat) => (
             <TouchableOpacity
               key={cat.id}
@@ -259,12 +261,10 @@ export function VaultFormScreen() {
               ]}
             >
               <Text style={styles.catIcon}>{cat.icon}</Text>
-              <Text
-                style={[
-                  styles.catLabel,
-                  { color: form.categoryId === cat.id ? "#fff" : tokens.muted },
-                ]}
-              >
+              <Text style={[
+                styles.catLabel,
+                { color: form.categoryId === cat.id ? "#fff" : tokens.muted },
+              ]}>
                 {cat.label}
               </Text>
             </TouchableOpacity>
@@ -278,25 +278,25 @@ export function VaultFormScreen() {
           { color: tokens.muted, borderColor: tokens.border },
         ]}
       >
-        {t("vault.section_account_info")}
+        {t("common.account_info")}
       </Text>
       <AppInput
-        label={t("vault.field_username")}
-        placeholder="username / email"
+        label={t("common.username")}
+        placeholder={t("vault.field_username_placeholder")}
         value={form.username ?? ""}
         onChangeText={(v) => update("username", v)}
       />
       <AppInput
-        label={t("vault.field_email")}
-        placeholder="email@domain.com"
+        label={t("common.email")}
+        placeholder={t("vault.field_email_placeholder")}
         value={form.email ?? ""}
         onChangeText={(v) => update("email", v)}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <AppInput
-        label={t("vault.field_password")}
-        placeholder="••••••••"
+        label={t("common.password")}
+        placeholder={t("vault.field_password_placeholder")}
         value={form.password ?? ""}
         onChangeText={(v) => update("password", v)}
         isPassword
@@ -312,46 +312,46 @@ export function VaultFormScreen() {
           { color: tokens.muted, borderColor: tokens.border },
         ]}
       >
-        {t("vault.section_extra_info")}
+        {t("common.extra_info")}
       </Text>
       <AppInput
-        label={t("vault.field_pin")}
-        placeholder="••••"
+        label={t("common.pin")}
+        placeholder={t("vault.field_pin_placeholder")}
         value={form.pin ?? ""}
         onChangeText={(v) => update("pin", v)}
         isPassword
         keyboardType="number-pad"
       />
       <AppInput
-        label={t("vault.field_phone")}
-        placeholder="08xxxxxxxxxx"
+        label={t("common.phone")}
+        placeholder={t("vault.field_phone_placeholder")}
         value={form.phone ?? ""}
         onChangeText={(v) => update("phone", v)}
         keyboardType="phone-pad"
       />
       <AppInput
-        label={t("vault.field_url")}
-        placeholder="https://..."
+        label={t("common.url")}
+        placeholder={t("vault.field_url_placeholder")}
         value={form.url ?? ""}
         onChangeText={(v) => update("url", v)}
         keyboardType="url"
         autoCapitalize="none"
       />
       <AppInput
-        label={t("vault.field_holder_name")}
-        placeholder="Nama pemegang"
+        label={t("common.holder")}
+        placeholder={t("vault.field_holder_name_placeholder")}
         value={form.holderName ?? ""}
         onChangeText={(v) => update("holderName", v)}
       />
       <AppInput
-        label={t("vault.field_expired_date")}
-        placeholder="MM/YYYY"
+        label={t("common.expiry_date")}
+        placeholder={t("vault.field_expired_date_placeholder")}
         value={form.expiredDate ?? ""}
         onChangeText={(v) => update("expiredDate", v)}
       />
       <AppInput
-        label={t("vault.field_notes")}
-        placeholder="Catatan..."
+        label={t("common.notes")}
+        placeholder={t("vault.field_notes_placeholder")}
         value={form.notes ?? ""}
         onChangeText={(v) => update("notes", v)}
         multiline
@@ -365,7 +365,7 @@ export function VaultFormScreen() {
           { color: tokens.muted, borderColor: tokens.border },
         ]}
       >
-        {t("vault.section_custom_fields")}
+        {t("common.custom_fields")}
       </Text>
 
       {form.customFields.map((field) => (
@@ -404,10 +404,16 @@ export function VaultFormScreen() {
       <AppBar
         title={id ? t("vault.edit_item") : t("vault.add_item")}
         right={
-          <TouchableOpacity onPress={handleSave} disabled={isLoading}>
-            <Text style={[styles.saveText, { color: colors.brand.blue }]}>
-              {isLoading ? t("common.loading") : t("common.save")}
-            </Text>
+          <TouchableOpacity
+            onPress={handleSave}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name={"save-outline"}
+              size={20}
+              color={tokens.text}
+            />
           </TouchableOpacity>
         }
       />

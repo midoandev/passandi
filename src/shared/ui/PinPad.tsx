@@ -6,6 +6,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 const PIN_LENGTH = 6;
 const NUMPAD = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
@@ -49,6 +50,7 @@ export function PinPad({
   footerText,
   onFooterPress,
 }: PinPadProps) {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
@@ -178,7 +180,7 @@ export function PinPad({
         >
           <Ionicons name="finger-print" size={24} color={tokens.muted} />
           <Text style={[styles.biometricText, { color: tokens.muted }]}>
-            Gunakan Biometrik
+            {t("unlock.use_biometric")}
           </Text>
         </TouchableOpacity>
       )}

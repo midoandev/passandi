@@ -105,7 +105,7 @@ export function IconPickerSheet({
   const renderColors = () => (
     <View>
       <Text style={[styles.groupLabel, { color: tokens.muted }]}>
-        Warna Background
+        {t("vault.icon_bg_color")}
       </Text>
       <View style={styles.colorGrid}>
         {ICON_COLORS.map((c) => (
@@ -131,9 +131,9 @@ export function IconPickerSheet({
     <ScrollView showsVerticalScrollIndicator={false}>
       {renderColors()}
       {EMOJI_GROUPS.map((group) => (
-        <View key={group.label} style={styles.group}>
+        <View key={group.labelKey} style={styles.group}>
           <Text style={[styles.groupLabel, { color: tokens.muted }]}>
-            {group.label}
+            {t(group.labelKey)}
           </Text>
           <View style={styles.emojiGrid}>
             {group.emojis.map((emoji) => (
@@ -162,9 +162,9 @@ export function IconPickerSheet({
     <ScrollView showsVerticalScrollIndicator={false}>
       {renderColors()}
       {IONICON_GROUPS.map((group) => (
-        <View key={group.label} style={styles.group}>
+        <View key={group.labelKey} style={styles.group}>
           <Text style={[styles.groupLabel, { color: tokens.muted }]}>
-            {group.label}
+            {t(group.labelKey)}
           </Text>
           <View style={styles.emojiGrid}>
             {group.icons.map((icon) => (
@@ -196,7 +196,7 @@ export function IconPickerSheet({
   const renderColorContent = () => (
     <ScrollView showsVerticalScrollIndicator={false}>
       <Text style={[styles.groupLabel, { color: tokens.muted }]}>
-        Pilih Warna Solid
+        {t("vault.icon_pick_color")}
       </Text>
       <View style={styles.colorGridLarge}>
         {ICON_COLORS.map((c) => (
@@ -229,7 +229,7 @@ export function IconPickerSheet({
     >
       <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
         <AppBar
-          title="Pilih Icon"
+          title={t("common.choose_icon")}
           onBack={onClose}
           right={
             <TouchableOpacity onPress={handleSave}>

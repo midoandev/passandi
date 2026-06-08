@@ -17,7 +17,7 @@ export const ICON_COLORS = [
 
 export const EMOJI_GROUPS = [
   {
-    label: "Keuangan",
+    labelKey: "vault.icon_group_finance",
     emojis: [
       "🏦",
       "💳",
@@ -34,7 +34,7 @@ export const EMOJI_GROUPS = [
     ],
   },
   {
-    label: "Sosial Media",
+    labelKey: "vault.icon_group_social",
     emojis: [
       "💬",
       "📸",
@@ -51,7 +51,7 @@ export const EMOJI_GROUPS = [
     ],
   },
   {
-    label: "Keamanan",
+    labelKey: "vault.icon_group_security",
     emojis: [
       "🔐",
       "🔑",
@@ -68,7 +68,7 @@ export const EMOJI_GROUPS = [
     ],
   },
   {
-    label: "Shopping",
+    labelKey: "vault.icon_group_shopping",
     emojis: [
       "🛍️",
       "🛒",
@@ -85,7 +85,7 @@ export const EMOJI_GROUPS = [
     ],
   },
   {
-    label: "Lainnya",
+    labelKey: "vault.icon_group_other",
     emojis: [
       "💼",
       "🏠",
@@ -105,7 +105,7 @@ export const EMOJI_GROUPS = [
 
 export const IONICON_GROUPS = [
   {
-    label: "Keuangan",
+    labelKey: "vault.icon_group_finance",
     icons: [
       "card-outline",
       "cash-outline",
@@ -116,7 +116,7 @@ export const IONICON_GROUPS = [
     ],
   },
   {
-    label: "Komunikasi",
+    labelKey: "vault.icon_group_communication",
     icons: [
       "mail-outline",
       "chatbubble-outline",
@@ -127,7 +127,7 @@ export const IONICON_GROUPS = [
     ],
   },
   {
-    label: "Keamanan",
+    labelKey: "vault.icon_group_security",
     icons: [
       "shield-outline",
       "lock-closed-outline",
@@ -138,7 +138,7 @@ export const IONICON_GROUPS = [
     ],
   },
   {
-    label: "Umum",
+    labelKey: "vault.icon_group_general",
     icons: [
       "home-outline",
       "car-outline",

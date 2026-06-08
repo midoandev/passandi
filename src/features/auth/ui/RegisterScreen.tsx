@@ -27,9 +27,9 @@ export function RegisterScreen() {
 
   const validate = (): string | null => {
     if (!name.trim() || !email.trim() || !password || !confirmPassword)
-      return t("auth.error_empty");
-    if (password.length < 8) return t("auth.error_password_length");
-    if (password !== confirmPassword) return t("auth.error_password_match");
+      return t("common.error_empty");
+    if (password.length < 8) return t("common.error_min_length");
+    if (password !== confirmPassword) return t("common.error_not_match");
     return null;
   };
 
@@ -48,7 +48,7 @@ export function RegisterScreen() {
     }
 
     Alert.alert(t("common.success"), t("auth.register_success"), [
-      { text: "OK", onPress: () => router.replace("/(auth)/login") },
+      { text: t("common.ok"), onPress: () => router.replace("/(auth)/login") },
     ]);
   };
 
@@ -66,14 +66,14 @@ export function RegisterScreen() {
         showsVerticalScrollIndicator={false}
       >
         <AppInput
-          label={t("auth.name")}
+          label={t("common.name")}
           placeholder={t("auth.name_placeholder")}
           autoCapitalize="words"
           value={name}
           onChangeText={setName}
         />
         <AppInput
-          label={t("auth.email")}
+          label={t("common.email")}
           placeholder={t("auth.email_placeholder")}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -81,7 +81,7 @@ export function RegisterScreen() {
           onChangeText={setEmail}
         />
         <AppInput
-          label={t("auth.password")}
+          label={t("common.password")}
           placeholder={t("auth.password_placeholder")}
           isPassword
           value={password}

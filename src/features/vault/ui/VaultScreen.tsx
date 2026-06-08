@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,10 +21,13 @@ import {
 } from "@/features/vault/model/useVaultQuery";
 import { useVaultUIStore } from "@/features/vault/model/vaultStore";
 import { VaultItemCard } from "./VaultItemCard";
-import type { VaultItem } from "@/entities/vault";
+import type { VaultCategory, VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
 import { SyncIndicator, FloatingButton, SkeletonList } from "@/shared/ui";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
+import {
+  isAllCategory, isFavoriteCategory, isSystemCategory,
+} from "@/shared/config/categoryHelpers";
 
 // Lazy loading config
 const PAGE_SIZE = 15;
@@ -38,15 +41,24 @@ export function VaultScreen() {
   const startSync = useSyncStore((s) => s.startSync);
   const userId = useAuthStore((s) => s.user?.id ?? "");
 
-  const selectedCategoryId = useVaultUIStore((s) => s.selectedCategoryId);
   const searchQuery = useVaultUIStore((s) => s.searchQuery);
   const isSearchVisible = useVaultUIStore((s) => s.isSearchVisible);
-  const setCategory = useVaultUIStore((s) => s.setCategory);
+
   const setSearchQuery = useVaultUIStore((s) => s.setSearchQuery);
   const toggleSearch = useVaultUIStore((s) => s.toggleSearch);
 
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const selectedCategory = useVaultUIStore((s) => s.selectedCategory);
+  const setCategory = useVaultUIStore((s) => s.setCategory);
+
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      const allCat = categories.find((c) => c.sortOrder === 0);
+      if (allCat) setCategory(allCat);
+    }
+  }, [categories]);
 
   const {
     data: items = [],
@@ -57,28 +69,37 @@ export function VaultScreen() {
   const { data: categories = [] } = useCategories();
   const toggleFavorite = useToggleFavorite();
 
-  // Filter items
   const filteredItems = useMemo(() => {
+    if (!items || items.length === 0) return [];
+
     let result = [...items];
 
-    if (selectedCategoryId === "favorite") {
-      result = result.filter((i) => i.isFavorite);
-    } else if (selectedCategoryId !== "all") {
-      result = result.filter((i) => i.categoryId === selectedCategoryId);
+    if (!selectedCategory || isAllCategory(selectedCategory)) {
+      // Tampilkan semua
+    } else if (isFavoriteCategory(selectedCategory)) {
+      result = result.filter((i) => i.isFavorite === true);
+    } else {
+      result = result.filter((i) => i.categoryId === selectedCategory.id);
     }
 
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
       result = result.filter(
         (i) =>
           i.title.toLowerCase().includes(q) ||
-          i.username?.toLowerCase().includes(q) ||
-          i.email?.toLowerCase().includes(q),
+          (i.username ?? "").toLowerCase().includes(q) ||
+          (i.email ?? "").toLowerCase().includes(q)
       );
     }
 
     return result;
-  }, [items, selectedCategoryId, searchQuery]);
+  }, [items, selectedCategory, searchQuery]);
+
+  const getCategoryLabel = (cat: VaultCategory): string => {
+    if (cat.sortOrder === 0) return t("common.all");
+    if (cat.sortOrder === 1) return t("common.favorite");
+    return cat.label;
+  };
 
   // Lazy loading — slice data per page
   const visibleItems = useMemo(
@@ -256,37 +277,28 @@ export function VaultScreen() {
                 )}
               </View>
             )}
-
             <FlatList
-              data={categories}
+              data={[...categories].sort((a, b) => a.sortOrder - b.sortOrder)}
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(c) => c.id}
               contentContainerStyle={styles.catList}
               renderItem={({ item: cat }) => {
-                const isActive = selectedCategoryId === cat.id;
+                const isActive = selectedCategory?.id === cat.id;
                 return (
                   <TouchableOpacity
-                    onPress={() => setCategory(cat.id)}
+                    onPress={() => setCategory(cat)}
+                    activeOpacity={0.7}
                     style={[
                       styles.catChip,
                       isActive
                         ? { backgroundColor: colors.brand.blue }
-                        : {
-                          backgroundColor: tokens.surface,
-                          borderWidth: 0.5,
-                          borderColor: tokens.border,
-                        },
+                        : { backgroundColor: tokens.surface, borderWidth: 0.5, borderColor: tokens.border },
                     ]}
                   >
                     <Text style={styles.catIcon}>{cat.icon}</Text>
-                    <Text
-                      style={[
-                        styles.catLabel,
-                        { color: isActive ? "#fff" : tokens.muted },
-                      ]}
-                    >
-                      {cat.label}
+                    <Text style={[styles.catLabel, { color: isActive ? "#fff" : tokens.muted }]}>
+                      {getCategoryLabel(cat)}
                     </Text>
                   </TouchableOpacity>
                 );

@@ -15,7 +15,7 @@ export function AccountScreen() {
   const handlePremium = () => {
     Alert.alert(
       t("settings.premium_feature"),
-      "Fitur ini tersedia di Passandi Premium.",
+      t("settings.premium_feature_desc"),
       [
         { text: t("common.cancel"), style: "cancel" },
         { text: t("settings.upgrade"), onPress: () => { } },
@@ -24,9 +24,9 @@ export function AccountScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(t("settings.logout"), t("settings.logout_confirm"), [
+    Alert.alert(t("common.logout"), t("common.logout_confirm"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("settings.logout"), style: "destructive", onPress: signOut },
+      { text: t("common.logout"), style: "destructive", onPress: signOut },
     ]);
   };
 

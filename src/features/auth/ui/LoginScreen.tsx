@@ -32,7 +32,7 @@ export function LoginScreen() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert(t("common.info"), t("auth.error_empty"), [{ text: "OK" }]);
+      Alert.alert(t("common.info"), t("common.error_empty"), [{ text: t("common.ok") }]);
       return;
     }
 
@@ -93,7 +93,7 @@ export function LoginScreen() {
           </Text>
 
           <AppInput
-            label={t("auth.email")}
+            label={t("common.email")}
             placeholder={t("auth.email_placeholder")}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -103,7 +103,7 @@ export function LoginScreen() {
           />
 
           <AppInput
-            label={t("auth.password")}
+            label={t("common.password")}
             placeholder={t("auth.password_placeholder")}
             isPassword
             value={password}
@@ -124,7 +124,7 @@ export function LoginScreen() {
               style={[styles.dividerLine, { backgroundColor: tokens.border }]}
             />
             <Text style={[styles.dividerText, { color: tokens.subtle }]}>
-              atau
+              {t("common.or")}
             </Text>
             <View
               style={[styles.dividerLine, { backgroundColor: tokens.border }]}

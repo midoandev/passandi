@@ -2,6 +2,7 @@ import * as Crypto from "expo-crypto";
 import { getDb } from "@/shared/lib/database/db";
 import { supabase } from "@/shared/lib/supabase";
 import type { VaultCategory } from "@/entities/vault";
+import { SORT_ALL, SORT_FAVORITE } from "@/shared/config/categoryHelpers";
 
 const rowToCategory = (row: any): VaultCategory => ({
   id: row.id,
@@ -118,9 +119,12 @@ export const updateLocalCategory = async (
 export const deleteLocalCategory = async (id: string): Promise<void> => {
   const db = await getDb();
   const row = await db.getFirstAsync<any>(
-    "SELECT is_default FROM vault_categories WHERE id = ?", [id]
+    "SELECT sort_order FROM vault_categories WHERE id = ?", [id]
   );
-  if (row?.is_default) throw new Error("Kategori default tidak bisa dihapus");
+
+  if (row?.sort_order === SORT_ALL || row?.sort_order === SORT_FAVORITE) {
+    throw new Error("Kategori sistem tidak bisa dihapus");
+  }
 
   await db.runAsync(
     `UPDATE vault_categories
@@ -129,6 +133,7 @@ export const deleteLocalCategory = async (id: string): Promise<void> => {
     [Date.now(), id]
   );
 };
+
 
 // REORDER
 export const updateCategorySortOrder = async (

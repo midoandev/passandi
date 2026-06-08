@@ -38,7 +38,7 @@ export function SecurityScreen() {
   const handlePremium = () => {
     Alert.alert(
       t("settings.premium_feature"),
-      "Fitur ini tersedia di Passandi Premium.",
+      t("settings.premium_feature_desc"),
       [
         { text: t("common.cancel"), style: "cancel" },
         { text: t("settings.upgrade"), onPress: () => { } },

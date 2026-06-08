@@ -18,10 +18,14 @@ type SyncResult = {
 
 const pushPendingItems = async (userId: string): Promise<number> => {
   const pending = await getPendingItems(userId);
+  console.log(`=== SYNC: Found ${pending.length} pending items ===`);
+
   let pushed = 0;
 
   for (const item of pending) {
     try {
+      console.log("Pushing item:", item.id, item.title);
+
       const payload = {
         user_id: item.user_id,
         title: item.title,
@@ -45,33 +49,48 @@ const pushPendingItems = async (userId: string): Promise<number> => {
         updated_at: new Date(item.updated_at).toISOString(),
       };
 
+      console.log("Payload user_id:", payload.user_id);
+
       if (item.is_deleted) {
         if (item.server_id) {
-          await supabase.from("vault_items")
-            .delete().eq("id", item.server_id);
+          const { error } = await supabase
+            .from("vault_items")
+            .delete()
+            .eq("id", item.server_id);
+          if (error) throw error;
         }
         const db = await getDb();
-        await db.runAsync(
-          "DELETE FROM vault_items WHERE id = ?", [item.id]
-        );
+        await db.runAsync("DELETE FROM vault_items WHERE id = ?", [item.id]);
       } else if (item.server_id) {
-        await supabase.from("vault_items")
-          .update(payload).eq("id", item.server_id);
+        const { error } = await supabase
+          .from("vault_items")
+          .update(payload)
+          .eq("id", item.server_id);
+        if (error) throw error;
         await markItemSynced(item.id, item.server_id);
       } else {
         const { data, error } = await supabase
           .from("vault_items")
-          .insert(payload).select("id").single();
-        if (error) throw error;
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if (error) {
+          console.error("Supabase insert error:", error);
+          throw error;
+        }
+
+        console.log("Inserted to Supabase with id:", data.id);
         await markItemSynced(item.id, data.id);
       }
 
       pushed++;
-    } catch {
+      console.log("Push success for:", item.title);
+    } catch (e) {
+      console.error("Push failed for:", item.title, e);
       await markItemFailed(item.id);
     }
   }
-
   return pushed;
 };
 

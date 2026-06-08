@@ -24,9 +24,10 @@ type Props = {
   onDragEnd: (id: string, newIndex: number) => void;
   onEdit: (item: VaultCategory) => void;
   onDelete: (item: VaultCategory) => void;
+  isSystem: boolean;
 };
 
-export function DraggableCategoryRow({
+export function DraggableCategoryRow({ isSystem,
   item, index, totalCount, itemCount,
   isDragging, onDragStart, onDragEnd,
   onEdit, onDelete,
@@ -38,7 +39,7 @@ export function DraggableCategoryRow({
   const startY = useRef(0);
 
   const panGesture = Gesture.Pan()
-    .enabled(!item.isDefault)
+    .enabled(!isSystem)
     .onBegin(() => {
       startY.current = 0;
       scale.value = withSpring(1.04);
@@ -80,7 +81,7 @@ export function DraggableCategoryRow({
             <Ionicons
               name="reorder-three"
               size={24}
-              color={item.isDefault ? tokens.border : tokens.muted}
+              color={isSystem ? tokens.border : tokens.muted}
             />
           </View>
 
@@ -106,7 +107,7 @@ export function DraggableCategoryRow({
               </Text>
             </View>
 
-            {!item.isDefault && (
+            {!isSystem && (
               <>
                 <TouchableOpacity
                   onPress={() => onEdit(item)}

@@ -36,7 +36,7 @@ export function DangerScreen() {
         borderColor: colors.brand.danger + "33",
       }]}>
         <Text style={[styles.bannerText, { color: colors.brand.danger }]}>
-          ⚠️  Tindakan di halaman ini bersifat permanen dan tidak dapat dibatalkan.
+          {t("settings.danger_warning")}
         </Text>
       </View>
 

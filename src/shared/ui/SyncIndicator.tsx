@@ -4,8 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
 import { colors } from "@/shared/config/ThemeContext";
 import { useTheme } from "@/shared/config/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 export function SyncIndicator() {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const status = useSyncStore((s) => s.status);
   const pendingCount = useSyncStore((s) => s.pendingCount);
@@ -37,11 +39,11 @@ export function SyncIndicator() {
   if (status === "idle" && isOnline && pendingCount === 0) return null;
 
   const getConfig = () => {
-    if (!isOnline) return { icon: "cloud-offline-outline", color: tokens.subtle, text: "Offline" };
-    if (status === "syncing") return { icon: "sync-outline", color: colors.brand.blue, text: "Menyinkron..." };
-    if (status === "success") return { icon: "checkmark-circle", color: "#10B981", text: "Tersinkron" };
-    if (status === "error") return { icon: "alert-circle-outline", color: colors.brand.danger, text: "Gagal sync" };
-    if (pendingCount > 0) return { icon: "time-outline", color: colors.brand.gold, text: `${pendingCount} pending` };
+    if (!isOnline) return { icon: "cloud-offline-outline", color: tokens.subtle, text: t("sync.offline") };
+    if (status === "syncing") return { icon: "sync-outline", color: colors.brand.blue, text: t("sync.syncing") };
+    if (status === "success") return { icon: "checkmark-circle", color: "#10B981", text: t("sync.synced") };
+    if (status === "error") return { icon: "alert-circle-outline", color: colors.brand.danger, text: t("sync.error") };
+    if (pendingCount > 0) return { icon: "time-outline", color: colors.brand.gold, text: `${pendingCount} ${t("sync.pending")}` };
     return null;
   };
 

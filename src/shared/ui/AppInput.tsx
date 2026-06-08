@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useTheme } from "@/shared/config/ThemeContext";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 type AppInputProps = TextInputProps & {
   label: string;
@@ -24,6 +25,7 @@ export function AppInput({
   iconSize,
   ...props
 }: AppInputProps) {
+  const { t } = useTranslation();
   const { tokens } = useTheme();
   const [show, setShow] = useState(false);
 
@@ -60,7 +62,7 @@ export function AppInput({
         {isPassword && (
           <TouchableOpacity onPress={() => setShow((s) => !s)}>
             <Text style={[styles.toggle, { color: tokens.subtle }]}>
-              {show ? "Sembunyikan" : "Tampilkan"}
+              {show ? t("common.hide") : t("common.show")}
             </Text>
           </TouchableOpacity>
         )}

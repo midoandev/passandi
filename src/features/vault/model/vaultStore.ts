@@ -1,23 +1,21 @@
-import { create } from "zustand";
-import type { VaultItem, VaultCategory } from "@/entities/vault";
+import type { VaultCategory } from "@/entities/vault";
+import { create } from "zustand/react";
 
-// Store hanya untuk UI state — data dari TanStack Query
 type VaultUIState = {
-  selectedCategoryId: string;
+  selectedCategory: VaultCategory | null;
   searchQuery: string;
   isSearchVisible: boolean;
-
-  setCategory: (id: string) => void;
+  setCategory: (cat: VaultCategory) => void;
   setSearchQuery: (q: string) => void;
   toggleSearch: () => void;
 };
 
 export const useVaultUIStore = create<VaultUIState>((set) => ({
-  selectedCategoryId: "all",
+  selectedCategory: null,  // null = belum ada data, set saat categories loaded
   searchQuery: "",
   isSearchVisible: false,
 
-  setCategory: (id) => set((state) => ({ selectedCategoryId: state.selectedCategoryId === id ? "" : id })),
+  setCategory: (cat) => set({ selectedCategory: cat }),
   setSearchQuery: (q) => set({ searchQuery: q }),
   toggleSearch: () => set((s) => ({ isSearchVisible: !s.isSearchVisible })),
 }));

@@ -34,9 +34,14 @@ export function VaultDetailScreen() {
   }, [id]);
 
   const handleDelete = useCallback(() => {
-    if (!item) return;
+    if (!item) {
+      console.log("Item not found, id:", id);
+      return;
+    }
+    console.log("Deleting item:", item.id, item.title);
+
     Alert.alert(
-      t("detail.delete"),
+      t("common.delete"),
       t("detail.delete_confirm", { name: item.title }),
       [
         { text: t("common.cancel"), style: "cancel" },
@@ -44,13 +49,20 @@ export function VaultDetailScreen() {
           text: t("common.delete"),
           style: "destructive",
           onPress: async () => {
-            await deleteItem.mutateAsync(item.id);
-            router.back();
+            try {
+              console.log("Mutating delete for:", item.id);
+              await deleteItem.mutateAsync(item.id);
+              console.log("Delete success, going back");
+              router.back();
+            } catch (e) {
+              console.error("Delete error:", e);
+              Alert.alert(t("common.error"), String(e));
+            }
           },
         },
       ]
     );
-  }, [item]);
+  }, [item, id]);
 
   const handleToggleFavorite = useCallback(() => {
     if (!item) return;
@@ -61,7 +73,7 @@ export function VaultDetailScreen() {
     if (!item?.url) return;
     const url = item.url.startsWith("http") ? item.url : `https://${item.url}`;
     Linking.openURL(url).catch(() => {
-      Alert.alert(t("common.error"), "Tidak bisa membuka URL ini.");
+      Alert.alert(t("common.error"), t("detail.error_open_url"));
     });
   }, [item?.url]);
 
@@ -72,7 +84,7 @@ export function VaultDetailScreen() {
         justifyContent: "center",
         alignItems: "center",
       }]}>
-        <Text style={{ color: tokens.muted }}>Item tidak ditemukan</Text>
+        <Text style={{ color: tokens.muted }}>{t("detail.error_not_found")}</Text>
       </View>
     );
   }
@@ -155,7 +167,7 @@ export function VaultDetailScreen() {
                 <View style={[styles.heroBadge, { backgroundColor: colors.brand.gold + "22" }]}>
                   <Ionicons name="star" size={10} color={colors.brand.gold} />
                   <Text style={[styles.heroBadgeText, { color: colors.brand.gold }]}>
-                    Favorit
+                    {t("common.favorite")}
                   </Text>
                 </View>
               )}
@@ -175,7 +187,7 @@ export function VaultDetailScreen() {
             >
               <Ionicons name="globe-outline" size={18} color={colors.brand.blue} />
               <Text style={[styles.quickBtnText, { color: colors.brand.blue }]}>
-                {t("detail.open_url")}
+                {t("common.open_url")}
               </Text>
             </TouchableOpacity>
           )}
@@ -189,7 +201,7 @@ export function VaultDetailScreen() {
           >
             <Ionicons name="pencil-outline" size={18} color={tokens.muted} />
             <Text style={[styles.quickBtnText, { color: tokens.muted }]}>
-              {t("detail.edit")}
+              {t("common.edit")}
             </Text>
           </TouchableOpacity>
 
@@ -202,31 +214,31 @@ export function VaultDetailScreen() {
           >
             <Ionicons name="trash-outline" size={18} color={colors.brand.danger} />
             <Text style={[styles.quickBtnText, { color: colors.brand.danger }]}>
-              {t("detail.delete")}
+              {t("common.delete")}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Info Akun */}
         <Text style={[styles.sectionLabel, { color: tokens.muted }]}>
-          {t("detail.section_account")}
+          {t("common.account_info")}
         </Text>
 
         <DetailField
-          label={t("detail.field_username")}
+          label={t("common.username")}
           value={item.username ?? ""}
-          copyLabel="Username"
+          copyLabel={t("common.username")}
         />
         <DetailField
-          label={t("detail.field_email")}
+          label={t("common.email")}
           value={item.email ?? ""}
-          copyLabel="Email"
+          copyLabel={t("common.email")}
         />
         <DetailField
-          label={t("detail.field_password")}
+          label={t("common.password")}
           value={item.password ?? ""}
           isSecret
-          copyLabel="Password"
+          copyLabel={t("common.password")}
         />
 
         {/* Info Tambahan */}
@@ -236,39 +248,39 @@ export function VaultDetailScreen() {
               color: tokens.muted,
               marginTop: 8,
             }]}>
-              {t("detail.section_extra")}
+              {t("common.extra_info")}
             </Text>
 
             <DetailField
-              label={t("detail.field_pin")}
+              label={t("common.pin")}
               value={item.pin ?? ""}
               isSecret
-              copyLabel="PIN"
+              copyLabel={t("common.pin")}
             />
             <DetailField
-              label={t("detail.field_phone")}
+              label={t("common.phone")}
               value={item.phone ?? ""}
-              copyLabel="Nomor Telepon"
+              copyLabel={t("common.phone")}
             />
             <DetailField
-              label={t("detail.field_url")}
+              label={t("common.url")}
               value={item.url ?? ""}
-              copyLabel="URL"
+              copyLabel={t("common.url")}
             />
             <DetailField
-              label={t("detail.field_holder")}
+              label={t("common.holder")}
               value={item.holderName ?? ""}
-              copyLabel="Nama Pemegang"
+              copyLabel={t("common.holder")}
             />
             <DetailField
-              label={t("detail.field_expired")}
+              label={t("common.expiry_date")}
               value={item.expiredDate ?? ""}
-              copyLabel="Expired"
+              copyLabel={t("common.expiry_date")}
             />
             <DetailField
-              label={t("detail.field_notes")}
+              label={t("common.notes")}
               value={item.notes ?? ""}
-              copyLabel="Catatan"
+              copyLabel={t("common.notes")}
             />
           </>
         )}
@@ -280,7 +292,7 @@ export function VaultDetailScreen() {
               color: tokens.muted,
               marginTop: 8,
             }]}>
-              {t("detail.section_custom")}
+              {t("common.custom_fields")}
             </Text>
             {item.customFields.map((field: any) => (
               <DetailField
@@ -297,12 +309,12 @@ export function VaultDetailScreen() {
         {/* Metadata */}
         <View style={[styles.meta, { borderColor: tokens.border }]}>
           <Text style={[styles.metaText, { color: tokens.subtle }]}>
-            Dibuat: {new Date(item.createdAt).toLocaleDateString("id-ID", {
+            {t("detail.created_at")} {new Date(item.createdAt).toLocaleDateString("id-ID", {
               day: "numeric", month: "long", year: "numeric",
             })}
           </Text>
           <Text style={[styles.metaText, { color: tokens.subtle }]}>
-            Diperbarui: {new Date(item.updatedAt).toLocaleDateString("id-ID", {
+            {t("detail.updated_at")} {new Date(item.updatedAt).toLocaleDateString("id-ID", {
               day: "numeric", month: "long", year: "numeric",
             })}
           </Text>

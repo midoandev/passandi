@@ -50,15 +50,15 @@ export function UnlockScreen() {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: t("unlock.biometric_prompt"),
       fallbackLabel: t("unlock.use_pin"),
-      cancelLabel: t("unlock.cancel"),
+      cancelLabel: t("common.cancel"),
     });
     if (result.success) router.replace("/(app)/vault");
   };
 
   const handleSignOut = () => {
-    Alert.alert(t("auth.logout"), t("auth.logout_confirm"), [
+    Alert.alert(t("common.logout"), t("common.logout_confirm"), [
       { text: t("common.cancel"), style: "cancel" },
-      { text: t("auth.logout"), style: "destructive", onPress: signOut },
+      { text: t("common.logout"), style: "destructive", onPress: signOut },
     ]);
   };
 

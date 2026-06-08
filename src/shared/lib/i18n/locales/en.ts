@@ -1,22 +1,77 @@
 export default {
+  // ── Common ──────────────────────────────────────────────────
+  // Shared across ALL features — single source of truth
   common: {
+    // App
     app_name: "Passandi",
     tagline: "Security Made Simple",
+
+    // Actions
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",
     confirm: "Confirm",
+    edit: "Edit",
+    add: "Add",
+    ok: "OK",
+    or: "or",
+    back: "Back",
+
+    // States
     loading: "Loading...",
     error: "Something went wrong",
     success: "Success",
     info: "Information",
+
+    // Visibility
+    hide: "Hide",
+    show: "Show",
+
+    // Auth fields
+    email: "Email",
+    password: "Password",
+    username: "Username",
+    name: "Full Name",
+    pin: "PIN",
+    notes: "Notes",
+    phone: "Phone Number",
+    url: "Website",
+
+    // Field labels
+    holder: "Account Holder",
+    expiry_date: "Expiry Date",
+    custom_fields: "Custom Fields",
+    account_info: "Account Information",
+    extra_info: "Additional Information",
+
+    // Vault
+    all: "All",
+    favorite: "Favorite",
+
+    // Plans
+    free_plan: "Free Plan",
+    premium: "Premium",
+
+    // Navigation
+    choose_icon: "Choose Icon",
+    choose_color: "Choose Color",
+
+    // Auth messages
+    logout: "Logout",
+    logout_confirm: "Are you sure you want to logout?",
+    error_empty: "All fields are required.",
+    error_not_match: "Passwords do not match.",
+    error_min_length: "Must be at least 8 characters.",
+
+    // Misc
+    default_username: "User",
   },
+
+  // ── Auth ────────────────────────────────────────────────────
   auth: {
     login: "Sign In",
     register: "Create Account",
-    email: "Email",
     email_placeholder: "name@email.com",
-    password: "Master Password",
     password_placeholder: "At least 8 characters",
     btn_login: "Sign In",
     btn_register: "Register",
@@ -25,25 +80,20 @@ export default {
     no_account: "Don't have an account?",
     go_login: "Sign In",
     go_register: "Register",
-    logout_confirm: "Are you sure you want to logout?",
-    logout: "Logout",
-    name: "Full Name",
     name_placeholder: "Enter your full name",
     confirm_password: "Confirm Password",
     confirm_password_placeholder: "Repeat your password",
-    error_empty: "All fields are required.",
-    error_password_match: "Passwords do not match.",
-    error_password_length: "Password must be at least 8 characters.",
     register_success: "Account created! Please sign in.",
+    master_password: "Master Password",
   },
+
+  // ── Vault ───────────────────────────────────────────────────
   vault: {
     title: "Vault",
     search: "Search accounts...",
     greeting: "Welcome,",
     empty_title: "No accounts yet",
     empty_sub: "Tap + to add your first account",
-    favorite: "FAVORITES",
-    all: "All",
     section_all: "ALL ACCOUNTS",
     items_count: "items",
     add_item: "Add Account",
@@ -52,23 +102,39 @@ export default {
     section_extra: "Additional Info",
     section_account_info: "Account Information",
     section_extra_info: "Additional Information",
-    section_custom_fields: "Custom Fields",
     field_title: "Account Name",
     field_title_placeholder: "e.g., BCA Mobile",
     field_category: "Category",
-    field_username: "Username",
-    field_email: "Email",
-    field_password: "Password",
-    field_pin: "PIN",
-    field_phone: "Phone Number",
-    field_url: "URL / Website",
-    field_holder_name: "Holder Name",
-    field_expired_date: "Expiry Date",
-    field_notes: "Notes",
+    field_username_placeholder: "username / email",
+    field_email_placeholder: "email@domain.com",
+    field_password_placeholder: "••••••••",
+    field_pin_placeholder: "••••",
+    field_phone_placeholder: "08xxxxxxxxxx",
+    field_url_placeholder: "https://...",
+    field_holder_name_placeholder: "Holder name",
+    field_expired_date_placeholder: "MM/YYYY",
+    field_notes_placeholder: "Notes...",
     add_custom_field: "Add Custom Field",
     mark_favorite: "Mark as Favorite",
     error_title_required: "Account name is required.",
+    error_save: "Failed to save",
+    custom_field_label: "Field Label",
+    custom_field_label_placeholder: "e.g. Recovery Code",
+    custom_field_value: "Value",
+    custom_field_value_placeholder: "Enter field value",
+    custom_field_hide_value: "Hide value",
+    icon_bg_color: "Background Color",
+    icon_pick_color: "Pick Solid Color",
+    icon_group_finance: "Finance",
+    icon_group_social: "Social Media",
+    icon_group_security: "Security",
+    icon_group_shopping: "Shopping",
+    icon_group_other: "Other",
+    icon_group_communication: "Communication",
+    icon_group_general: "General",
   },
+
+  // ── Settings ────────────────────────────────────────────────
   settings: {
     title: "Settings",
     section_display: "Display",
@@ -81,7 +147,6 @@ export default {
     biometric_sub: "FaceID / Fingerprint",
     master_password: "Change Master Password",
     about: "About App",
-    logout: "Logout",
     wipe: "Wipe All Data",
     wipe_sub: "Delete all data on this device",
     wipe_confirm:
@@ -90,8 +155,6 @@ export default {
     delete_account_sub: "This cannot be undone",
     delete_confirm:
       "Your account and all data will be deleted forever. This action cannot be undone.",
-    free_plan: "Free Plan",
-    premium_plan: "Premium",
     section_app: "Application",
     section_account: "Account",
     section_support: "Support",
@@ -123,7 +186,6 @@ export default {
     active_sessions_sub: "{{count}} devices connected",
     export_data: "Export Data",
     export_data_sub: "Export vault to encrypted file",
-    logout_confirm: "Are you sure you want to logout?",
     wipe_data: "Wipe All Data",
     wipe_data_sub: "Local wipe, account remains",
     contact_us: "Contact Us",
@@ -132,8 +194,12 @@ export default {
     privacy: "Privacy Policy",
     about_sub: "v1.0.0 · Build 1",
     premium_feature: "Premium Feature",
+    premium_feature_desc: "This feature is available in Passandi Premium.",
     upgrade: "Upgrade",
+    danger_warning: "⚠️ Actions on this page are permanent and cannot be undone.",
   },
+
+  // ── Security (Setup Flow) ───────────────────────────────────
   security: {
     step_of: "Step {{current}} of {{total}}",
     master_password_title: "Create Master Password",
@@ -148,9 +214,6 @@ export default {
     strength_good: "Good",
     strength_strong: "Strong",
     btn_continue: "Continue →",
-    error_empty: "All fields are required.",
-    error_min_length: "Minimum 8 characters.",
-    error_not_match: "Passwords do not match.",
     pin_title: "Create 6-Digit PIN",
     pin_subtitle: "For faster access every day",
     pin_confirm_title: "Confirm PIN",
@@ -160,79 +223,70 @@ export default {
     success_subtitle: "Your account is secured. Welcome to Passandi.",
     btn_enter_vault: "Enter Vault",
   },
+
+  // ── Unlock ──────────────────────────────────────────────────
   unlock: {
     title: "Enter PIN",
     greeting: "Hello, {{name}} 👋",
     use_biometric: "Use Biometrics",
     use_pin: "Use PIN",
     biometric_prompt: "Confirm your identity",
-    cancel: "Cancel",
     switch_account: "Switch Account",
   },
+
+  // ── Category ────────────────────────────────────────────────
   category: {
     title: "Categories",
-    all: "All",
-    favorite: "Favorite ⭐",
     bank: "Bank",
     sosmed: "Social",
     ewallet: "E-Wallet",
     work: "Work",
     hiburan: "Entertainment",
     shopping: "Shopping",
-    add: "Add",
     edit: "Edit Category",
     btn_add: "Create Category",
     section_default: "Default",
     section_custom: "Custom",
     name_label: "Category Name",
     name_placeholder: "e.g. Finance",
-    choose_icon: "Choose Icon",
-    choose_color: "Choose Color",
     delete_title: "Delete Category",
     delete_confirm: "Delete \"{{name}}\"? Items inside won't be deleted.",
     info_guide: "Use categories to organize your passwords. Tap + Add to create a new one.",
     add_first: "Create your first category",
   },
+
+  // ── Detail ──────────────────────────────────────────────────
   detail: {
     title: "Account Detail",
     section_account: "Account Info",
     section_extra: "Additional Info",
-    section_custom: "Custom Fields",
     copy_success: "Copied!",
     copied: "{{field}} copied to clipboard",
-    reveal: "Show",
-    hide: "Hide",
     open_url: "Open Website",
-    edit: "Edit",
-    delete: "Delete",
     delete_confirm: "Delete \"{{name}}\"? This cannot be undone.",
-    field_username: "Username",
-    field_email: "Email",
-    field_password: "Password",
-    field_pin: "PIN",
-    field_phone: "Phone Number",
-    field_url: "Website",
-    field_notes: "Notes",
-    field_holder: "Account Holder",
-    field_expired: "Expiry Date",
+    error_not_found: "Item not found",
+    error_open_url: "Cannot open this URL.",
+    created_at: "Created:",
+    updated_at: "Updated:",
   },
+
+  // ── Profile ─────────────────────────────────────────────────
   profile: {
     title: "Profile",
     full_name: "Full Name",
     full_name_placeholder: "Enter your full name",
-    email: "Email",
     email_note: "Email cannot be changed",
     member_since: "Member since",
     save: "Save Changes",
     save_success: "Profile updated successfully",
     plan_title: "Your Plan",
-    plan_free: "Free Plan",
     plan_free_sub: "Access basic Passandi features",
-    plan_premium: "Premium",
     plan_premium_sub: "All features, no limits",
     upgrade_btn: "Upgrade to Premium",
     upgrade_desc: "Get 2FA, Data Export, and more",
   },
+
+  // ── Change PIN ──────────────────────────────────────────────
   change_pin: {
     title: "Change PIN",
     current_pin: "Current PIN",
@@ -244,19 +298,39 @@ export default {
     error_wrong: "Current PIN is incorrect",
     error_match: "New PINs do not match",
     step_current: "Verify Old PIN",
+    step_current_sub: "Enter your current PIN",
     step_new: "Create New PIN",
+    step_new_sub: "Enter 6-digit new PIN",
     step_confirm: "Confirm New PIN",
+    step_confirm_sub: "Re-enter your new PIN",
   },
+
+  // ── Sessions ────────────────────────────────────────────────
+  sessions: {
+    coming_soon_title: "Multi-Device Support",
+    coming_soon_desc: "This feature is under development.\nYou'll be able to see all logged-in devices, revoke access, and scan QR to open Passandi on your laptop browser.",
+    coming_soon_badge: "Coming Soon",
+    info_text: "Passandi currently supports logging in on multiple mobile devices simultaneously using the same account.",
+  },
+
+  // ── Sync ────────────────────────────────────────────────────
+  sync: {
+    offline: "Offline",
+    syncing: "Syncing...",
+    synced: "Synced",
+    error: "Sync failed",
+    pending: "pending",
+  },
+
+  // ── About ───────────────────────────────────────────────────
   about: {
     title: "About Passandi",
     version: "Version",
     build: "Build",
-    tagline: "Security Made Simple",
     description: "Passandi is a password manager that prioritizes security and simplicity. Your data is encrypted and always in sync.",
     made_with: "Made with ❤️ in Indonesia",
     section_info: "App Information",
     section_legal: "Legal",
-    app_name: "Passandi",
     platform: "Platform",
     platform_val: "iOS & Android",
     open_source: "Open Source Libraries",

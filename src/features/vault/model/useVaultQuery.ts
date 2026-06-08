@@ -9,32 +9,31 @@ import {
   toggleLocalFavorite,
 } from "../api/vaultApi";
 import {
-  createLocalCategory,
-  deleteLocalCategory,
   fetchCategories,
+  createLocalCategory,
+  updateLocalCategory,
+  deleteLocalCategory,
   updateCategorySortOrder,
-  updateLocalCategory
 } from "../api/categoryApi";
 import type { VaultItemForm } from "@/entities/vault";
 
-export const VAULT_KEY = (userId: string) => ["vault", userId];
-export const CATEGORIES_KEY = (userId: string) => ["categories", userId];
+export const VAULT_KEY = (uid: string) => ["vault", uid];
+export const CATEGORIES_KEY = (uid: string) => ["categories", uid];
 
-// READ dari local DB
+// ─── READ ─────────────────────────────────────────────────────────────
+
 export const useVaultItems = () => {
   const userId = useAuthStore((s) => s.user?.id ?? "");
-
   return useQuery({
     queryKey: VAULT_KEY(userId),
     queryFn: () => getLocalVaultItems(userId),
     enabled: !!userId,
-    staleTime: Infinity,     // local data tidak stale — sync engine yang urus
+    staleTime: Infinity,
   });
 };
 
 export const useCategories = () => {
   const userId = useAuthStore((s) => s.user?.id ?? "");
-
   return useQuery({
     queryKey: CATEGORIES_KEY(userId),
     queryFn: () => fetchCategories(userId),
@@ -42,66 +41,65 @@ export const useCategories = () => {
   });
 };
 
-// CREATE
-export const useCreateVaultItem = () => {
+// ─── SHARED HELPER ────────────────────────────────────────────────────
+
+const useVaultMutationBase = () => {
   const userId = useAuthStore((s) => s.user?.id ?? "");
   const queryClient = useQueryClient();
   const startSync = useSyncStore((s) => s.startSync);
+
+  const invalidateVault = () =>
+    queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
+
+  const invalidateCategories = () =>
+    queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY(userId) });
+
+  const sync = () => startSync(userId);
+
+  return { userId, queryClient, invalidateVault, invalidateCategories, sync };
+};
+
+// ─── VAULT MUTATIONS ──────────────────────────────────────────────────
+
+export const useCreateVaultItem = () => {
+  const { userId, invalidateVault, sync } = useVaultMutationBase();
 
   return useMutation({
     mutationFn: (form: VaultItemForm) =>
       createLocalVaultItem(userId, form),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
-      startSync(userId);   // trigger sync setelah create
-    },
+    onSuccess: () => { invalidateVault(); sync(); },
   });
 };
 
-// UPDATE
 export const useUpdateVaultItem = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, invalidateVault, sync } = useVaultMutationBase();
 
   return useMutation({
     mutationFn: ({ id, form }: { id: string; form: Partial<VaultItemForm> }) =>
-      updateLocalVaultItem(id, form),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
-      startSync(userId);
-    },
+      updateLocalVaultItem(userId, id, form),
+    onSuccess: () => { invalidateVault(); sync(); },
   });
 };
 
-// DELETE
 export const useDeleteVaultItem = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, invalidateVault, sync } = useVaultMutationBase();
 
   return useMutation({
-    mutationFn: (id: string) => deleteLocalVaultItem(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
-      startSync(userId);
-    },
+    mutationFn: (id: string) => deleteLocalVaultItem(userId, id),
+    onSuccess: () => { invalidateVault(); sync(); },
+    onError: (e) => console.error("Delete vault error:", e),
   });
 };
 
-// TOGGLE FAVORITE — optimistic
 export const useToggleFavorite = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, queryClient, invalidateVault, sync } = useVaultMutationBase();
 
   return useMutation({
     mutationFn: ({ id, current }: { id: string; current: boolean }) =>
-      toggleLocalFavorite(id, current),
+      toggleLocalFavorite(userId, id, current),
     onMutate: async ({ id, current }) => {
       await queryClient.cancelQueries({ queryKey: VAULT_KEY(userId) });
       const previous = queryClient.getQueryData(VAULT_KEY(userId));
-
       queryClient.setQueryData(VAULT_KEY(userId), (old: any[]) =>
         old?.map((item) =>
           item.id === id ? { ...item, isFavorite: !current } : item
@@ -109,75 +107,53 @@ export const useToggleFavorite = () => {
       );
       return { previous };
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (_e, _v, ctx) => {
       queryClient.setQueryData(VAULT_KEY(userId), ctx?.previous);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: VAULT_KEY(userId) });
-      startSync(userId);
-    },
+    onSuccess: () => { invalidateVault(); sync(); },
   });
 };
 
+// ─── CATEGORY MUTATIONS ───────────────────────────────────────────────
+
 export const useCreateCategory = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, invalidateCategories, sync } = useVaultMutationBase();
 
   return useMutation({
-    mutationFn: ({
-      label, icon, color,
-    }: { label: string; icon: string; color: string }) =>
+    mutationFn: ({ label, icon, color }:
+      { label: string; icon: string; color: string }) =>
       createLocalCategory(userId, label, icon, color),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY(userId) });
-      startSync(userId);
-    },
+    onSuccess: () => { invalidateCategories(); sync(); },
   });
 };
 
 export const useUpdateCategory = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, invalidateCategories, sync } = useVaultMutationBase();
 
   return useMutation({
-    mutationFn: ({
-      id, label, icon,
-    }: { id: string; label: string; icon: string }) =>
+    mutationFn: ({ id, label, icon }:
+      { id: string; label: string; icon: string }) =>
       updateLocalCategory(id, label, icon),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY(userId) });
-      startSync(userId);
-    },
+    onSuccess: () => { invalidateCategories(); sync(); },
   });
 };
 
 export const useDeleteCategory = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { userId, invalidateCategories, sync } = useVaultMutationBase();
 
   return useMutation({
     mutationFn: (id: string) => deleteLocalCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY(userId) });
-      startSync(userId);
-    },
+    onSuccess: () => { invalidateCategories(); sync(); },
+    onError: (e) => console.error("Delete category error:", e),
   });
 };
 
 export const useReorderCategories = () => {
-  const userId = useAuthStore((s) => s.user?.id ?? "");
-  const queryClient = useQueryClient();
-  const startSync = useSyncStore((s) => s.startSync);
+  const { invalidateCategories, sync } = useVaultMutationBase();
 
   return useMutation({
     mutationFn: (items: { id: string; sortOrder: number }[]) =>
       updateCategorySortOrder(items),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CATEGORIES_KEY(userId) });
-      startSync(userId);
-    },
+    onSuccess: () => { invalidateCategories(); sync(); },
   });
 };

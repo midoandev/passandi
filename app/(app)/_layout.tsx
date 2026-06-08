@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from 'expo-router/build/react-navigation/bottom-tabs/types';
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type TabConfig = {
   name: string;
@@ -14,28 +15,29 @@ type TabConfig = {
   iconFill: keyof typeof Ionicons.glyphMap;
 };
 
-const TABS: TabConfig[] = [
-  {
-    name: "vault",
-    label: "Brankas",
-    icon: "shield-outline",
-    iconFill: "shield",
-  },
-  {
-    name: "category",
-    label: "Kategori",
-    icon: "grid-outline",
-    iconFill: "grid",
-  },
-  {
-    name: "settings",
-    label: "Pengaturan",
-    icon: "settings-outline",
-    iconFill: "settings",
-  },
-];
-
 function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
+  const { t } = useTranslation();
+
+  const TABS: TabConfig[] = [
+    {
+      name: "vault",
+      label: t("vault.title"),
+      icon: "shield-outline",
+      iconFill: "shield",
+    },
+    {
+      name: "category",
+      label: t("category.title"),
+      icon: "grid-outline",
+      iconFill: "grid",
+    },
+    {
+      name: "settings",
+      label: t("settings.title"),
+      icon: "settings-outline",
+      iconFill: "settings",
+    },
+  ];
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
 
