@@ -57,7 +57,7 @@ export function AccountScreen() {
           icon="log-out-outline"
           iconBg={colors.brand.gold + "22"}
           iconColor={colors.brand.gold}
-          title={t("settings.logout")}
+          title={t("common.logout")}
           onPress={handleLogout}
         />
       </SettingGroup>
