@@ -1,2 +1,10 @@
 export { PaywallScreen } from "./ui/PaywallScreen";
-export { usePremiumStore, useSubscriptionTier, useIsPremium, useIsPremiumLoading } from "./model/premiumStore";
+export {
+  usePremiumStore,
+  useSubscriptionTier,
+  useIsPremium,
+  useIsPremiumLoading,
+  usePurchaseStatus,
+  usePurchaseError,
+  useProducts,
+} from "./model/premiumStore";

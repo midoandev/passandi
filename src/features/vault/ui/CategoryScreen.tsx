@@ -154,7 +154,8 @@ export function CategoryScreen() {
                   totalCount={defaultCategories.length}
                   itemCount={getItemCount(cat)}
                   isDragging={draggingId === cat.id}
-                  isSystem={isSystemCategory(cat)}
+                  // isSystem={isSystemCategory(cat)
+                  isSystem
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onEdit={handleEdit}

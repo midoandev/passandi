@@ -5,14 +5,18 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack, router, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
 import { ThemeProvider, useTheme } from "@/shared/config/ThemeContext";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
 import { usePendingCount } from "@/shared/lib/sync/usePendingCount";
-import { usePremiumStore } from "@/features/premium/model/premiumStore";
+import { usePremiumStore } from "@/features/premium";
 import { useSettingsStore } from "@/features/settings/model/settingsStore";
+import { getDb } from "@/shared/lib/database/db";
 
+// Prevent native splash from hiding until we're ready
+SplashScreen.preventAutoHideAsync();
 
 function AuthGate() {
   const initialized = useAuthStore((s) => s.initialized);
@@ -31,25 +35,17 @@ function AuthGate() {
     const currentRoute = (segments[1] as string) ?? "";
     const inSecurityRoute = SECURITY_ROUTES.includes(currentRoute);
 
-    // Jangan interrupt security flow
     if (inSecurityRoute) return;
 
     const navigate = async () => {
       isNavigating.current = true;
 
       try {
-
-        // Kondisi 1 — tidak ada session (user belum login)
-        // Karena splash screen sudah menangani arah masuk, cukup arahkan ke unlock
         if (!session || !user) {
-          if (!inAuthGroup) router.replace("/(auth)/unlock");
+          if (!inAuthGroup) router.replace("/(auth)/login");
           return;
         }
 
-
-        // Ada session → cek PIN untuk userId ini
-        // Kondisi 2, 6, 9 — belum ada PIN
-        // Kondisi 3, 4, 5 — sudah ada PIN
         const hasPin = await checkHasPin(user.id);
 
         if (!hasPin) {
@@ -64,7 +60,6 @@ function AuthGate() {
       }
     };
 
-    // Hanya jalankan saat di luar security routes
     if (!inSecurityRoute) navigate();
   }, [session, initialized]);
 
@@ -75,12 +70,32 @@ function PremiumProvider() {
   const user = useAuthStore((s) => s.user);
   const initialized = useAuthStore((s) => s.initialized);
   const checkPremiumStatus = usePremiumStore((s) => s.checkPremiumStatus);
+  const handlePurchaseResult = usePremiumStore((s) => s.handlePurchaseResult);
 
   useEffect(() => {
     if (initialized && user) {
       checkPremiumStatus(user.id);
     }
   }, [initialized, user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let cleanup: () => void = () => {};
+
+    (async () => {
+      const mod = await import('@/shared/lib/iap/iapManager');
+      const ready = await mod.ensureConnected();
+      if (!ready.success) return;
+      cleanup = mod.onPurchaseUpdate((purchase: any) => {
+        handlePurchaseResult(purchase, user.id);
+      });
+    })();
+
+    return () => {
+      cleanup?.();
+    };
+  }, [user]);
 
   return null;
 }
@@ -103,8 +118,18 @@ export default function RootLayout() {
   const initSettings = useSettingsStore((s) => s.init);
 
   useEffect(() => {
-    initialize();
-    initSettings();
+    const boot = async () => {
+      try {
+        await getDb();        // 1. init SQLite
+        await initialize();   // 2. init auth session
+        await initSettings(); // 3. init settings
+      } catch (e) {
+        console.error("Boot error:", e);
+      } finally {
+        await SplashScreen.hideAsync(); // 4. hide native splash
+      }
+    };
+    boot();
   }, []);
 
   return (

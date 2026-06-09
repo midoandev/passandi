@@ -13,6 +13,7 @@ import { AppInput } from "@/shared/ui/AppInput";
 import { AppButton } from "@/shared/ui/AppButton";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { supabase } from "@/shared/lib/supabase";
+import { useIsPremium, useSubscriptionTier } from "@/features/premium";
 
 export function ProfileScreen() {
   const { t } = useTranslation();
@@ -30,6 +31,9 @@ export function ProfileScreen() {
       day: "numeric", month: "long", year: "numeric",
     })
     : "-";
+
+  const isPremium = useIsPremium();
+  const tier = useSubscriptionTier();
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -122,19 +126,25 @@ export function ProfileScreen() {
                 {t("profile.plan_title")}
               </Text>
               <Text style={[styles.planName, { color: tokens.text }]}>
-                {t("common.free_plan")}
+                {isPremium ? t('common.premium') : t('common.free_plan')}
               </Text>
               <Text style={[styles.planSub, { color: tokens.subtle }]}>
-                {t("profile.plan_free_sub")}
+                {isPremium ? t('profile.plan_premium_sub') : t('profile.plan_free_sub')}
               </Text>
             </View>
             <View style={[styles.planBadge, {
-              backgroundColor: colors.brand.gold + "22",
-              borderColor: colors.brand.gold + "44",
+              backgroundColor: isPremium ? (colors.brand.gold + "22") : "#37415122",
+              borderColor: isPremium ? (colors.brand.gold + "44") : "#37415144",
             }]}>
-              <Ionicons name="star-outline" size={14} color={colors.brand.gold} />
-              <Text style={[styles.planBadgeText, { color: colors.brand.gold }]}>
-                {t("common.free_plan")}
+              <Ionicons
+                name={isPremium ? "diamond" : "star-outline"}
+                size={14}
+                color={isPremium ? colors.brand.gold : "#6B7280"}
+              />
+              <Text style={[styles.planBadgeText, {
+                color: isPremium ? colors.brand.gold : "#6B7280",
+              }]}>
+                {isPremium ? t('common.premium') : t('common.free_plan')}
               </Text>
             </View>
           </View>

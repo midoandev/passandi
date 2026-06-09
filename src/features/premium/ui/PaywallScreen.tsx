@@ -1,14 +1,37 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import { useTheme, colors } from '@/shared/config/ThemeContext';
 import { PremiumCard, UpgradeButton } from "@/shared/ui";
-import { router } from 'expo-router';
+import {
+  usePremiumStore,
+  usePurchaseStatus,
+  usePurchaseError,
+  useProducts,
+} from '../model/premiumStore';
+import { useAuthStore } from '@/features/auth/model/authStore';
+import { PREMIUM_PRODUCT_IDS } from '@/shared/config/subscription';
 
 export function PaywallScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const purchaseStatus = usePurchaseStatus();
+  const purchaseError = usePurchaseError();
+  const products = useProducts();
+  const buyPremium = usePremiumStore((s) => s.buyPremium);
+  const restorePremium = usePremiumStore((s) => s.restorePremium);
+  const initIap = usePremiumStore((s) => s.initIap);
+  const clearPurchaseError = usePremiumStore((s) => s.clearPurchaseError);
+  const subscriptionTier = usePremiumStore((s) => s.subscriptionTier);
+
+  const isAlreadyPremium = subscriptionTier === 'premium';
+  const isPurchasing = purchaseStatus === 'purchasing';
+  const isRestoring = purchaseStatus === 'restoring';
+  const userId = useAuthStore((s) => s.user?.id ?? '');
 
   const features = [
     { icon: '💾', titleKey: 'premium.feature_unlimited_items', descKey: 'premium.limit_reached_message' as const },
@@ -24,34 +47,82 @@ export function PaywallScreen() {
     'premium.feature_biometric_lock', 'premium.feature_cloud_sync', 'premium.feature_export_vault',
   ] as const;
 
+  useEffect(() => {
+    if (isAlreadyPremium) return;
+    const ids = PREMIUM_PRODUCT_IDS.production;
+    initIap(ids.ios);
+  }, []);
+
+  useEffect(() => {
+    if (purchaseStatus === 'success') {
+      Alert.alert(t('premium.success'), '', [
+        { text: t('common.ok'), onPress: () => router.back() },
+      ]);
+    }
+  }, [purchaseStatus]);
+
+  useEffect(() => {
+    if (purchaseError) {
+      Alert.alert(t('premium.error'), purchaseError, [
+        { text: t('common.ok'), onPress: clearPurchaseError },
+      ]);
+    }
+  }, [purchaseError]);
+
   const handleUpgrade = () => {
-    // TODO: Phase 6 — implement purchase flow
-    router.back();
+    const productId = products[0]?.id ?? 'passandi_premium_lifetime';
+    buyPremium(productId, userId);
   };
+
+  const handleRestore = async () => {
+    const result = await restorePremium(userId);
+    if (result === null) {
+      Alert.alert(t('premium.info'), t('common.cancel'));
+    }
+  };
+
+  if (isAlreadyPremium) {
+    return (
+      <ScrollView style={[styles.container, { backgroundColor: tokens.bg }]}
+        contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={[styles.header, {
+          backgroundColor: tokens.surface, borderBottomColor: tokens.border,
+          paddingTop: insets.top + 12,
+        }]}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Text style={[styles.backText, { color: colors.brand.blue }]}>← {t('common.back')}</Text>
+          </TouchableOpacity>
+          <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
+          <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.already_premium')}</Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.bg }]}
       contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={[styles.header, {
-        backgroundColor: tokens.surface,
-        borderBottomColor: tokens.border,
+        backgroundColor: tokens.surface, borderBottomColor: tokens.border,
         paddingTop: insets.top + 12,
       }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={[styles.backText, { color: colors.brand.blue }]}>← {t('common.back')}</Text>
-        </TouchableOpacity>
         <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
         <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.subtitle')}</Text>
       </View>
 
       <View style={[styles.pricing, {
-        backgroundColor: tokens.surface,
-        borderColor: tokens.border,
+        backgroundColor: tokens.surface, borderColor: tokens.border,
       }]}>
         <View style={styles.priceBox}>
-          <Text style={[styles.priceLabel, { color: tokens.subtle }]}>{t('premium.lifetime_access')}</Text>
-          <Text style={[styles.price, { color: tokens.text }]}>{t('premium.price_idr')}</Text>
-          <Text style={[styles.priceSub, { color: tokens.subtle }]}>{t('premium.one_time_purchase')}</Text>
+          <Text style={[styles.priceLabel, { color: tokens.subtle }]}>
+            {t('premium.lifetime_access')}
+          </Text>
+          <Text style={[styles.price, { color: tokens.text }]}>
+            {products[0]?.price ?? t('premium.price_idr')}
+          </Text>
+          <Text style={[styles.priceSub, { color: tokens.subtle }]}>
+            {t('premium.one_time_purchase')}
+          </Text>
         </View>
       </View>
 
@@ -75,8 +146,7 @@ export function PaywallScreen() {
       </View>
 
       <View style={[styles.compare, {
-        backgroundColor: tokens.surface,
-        borderColor: tokens.border,
+        backgroundColor: tokens.surface, borderColor: tokens.border,
       }]}>
         <Text style={[styles.compareTitle, { color: tokens.text }]}>
           {t('premium.subtitle')}
@@ -93,12 +163,20 @@ export function PaywallScreen() {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.secondaryBtn} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={handleRestore}
+          disabled={isRestoring}
+        >
           <Text style={[styles.secondaryText, { color: tokens.subtle }]}>
-            {t('common.cancel')}
+            {isRestoring ? t('premium.loading') : t('premium.restore_purchase')}
           </Text>
         </TouchableOpacity>
-        <UpgradeButton onPress={handleUpgrade} />
+        <UpgradeButton
+          onPress={handleUpgrade}
+          loading={isPurchasing}
+          disabled={isPurchasing || isRestoring || purchaseStatus === 'loading_products'}
+        />
       </View>
     </ScrollView>
   );

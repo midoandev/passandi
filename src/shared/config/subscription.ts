@@ -68,6 +68,22 @@ export const PREMIUM_PRICING = {
 } as const;
 
 /**
+ * Platform-specific product IDs for IAP
+ * These must match Google Play Console and App Store Connect entries.
+ * For testing, use Google Play test SKUs (android.test.purchased, etc.)
+ */
+export const PREMIUM_PRODUCT_IDS = {
+  production: {
+    ios: ['passandi_premium_lifetime'] as string[],
+    android: ['passandi_premium_lifetime'] as string[],
+  },
+  test: {
+    ios: [] as string[], // Use StoreKit Testing in Xcode
+    android: ['android.test.purchased'] as string[],
+  },
+} as const;
+
+/**
  * Feature display names for UI
  */
 export const FEATURE_NAMES = {

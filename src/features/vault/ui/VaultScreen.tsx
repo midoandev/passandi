@@ -25,6 +25,8 @@ import type { VaultCategory, VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
 import { SyncIndicator, FloatingButton, SkeletonList } from "@/shared/ui";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
+import { useIsPremium } from "@/features/premium";
+import { SUBSCRIPTION_LIMITS } from "@/shared/config/subscription";
 import {
   isAllCategory, isFavoriteCategory, isSystemCategory,
 } from "@/shared/config/categoryHelpers";
@@ -141,6 +143,11 @@ export function VaultScreen() {
     user?.email?.split("@")[0] ??
     "";
 
+  const isPremium = useIsPremium();
+  const maxItems = SUBSCRIPTION_LIMITS[isPremium ? 'premium' : 'free'].maxVaultItems;
+  const itemLimit = maxItems === Infinity ? 9999 : maxItems;
+  const showLimit = !isPremium && items.length >= Math.min(8, itemLimit as number);
+
   const renderItem = useCallback(
     ({ item }: { item: VaultItem }) => (
       <VaultItemCard
@@ -245,6 +252,26 @@ export function VaultScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* Premium limit indicator */}
+            {showLimit && (
+              <TouchableOpacity
+                onPress={() => router.push('/(premium)/paywall')}
+                style={[styles.limitBanner, {
+                  backgroundColor: colors.brand.gold + "15",
+                  borderColor: colors.brand.gold + "33",
+                }]}
+                activeOpacity={0.8}
+              >
+                <View style={styles.limitContent}>
+                  <Ionicons name="diamond" size={14} color={colors.brand.gold} />
+                  <Text style={styles.limitText}>
+                    {items.length}/{itemLimit} — {t('premium.upgrade_to_premium')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color={colors.brand.gold} />
+              </TouchableOpacity>
+            )}
 
             {/* Search Bar */}
             {isSearchVisible && (
@@ -378,4 +405,15 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: "500" },
   emptySub: { fontSize: 13, textAlign: "center" },
   footerLoader: { paddingTop: 4 },
+
+  limitBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    borderRadius: 12, borderWidth: 0.5,
+    paddingHorizontal: 14, paddingVertical: 10,
+    marginBottom: 14, gap: 4,
+  },
+  limitContent: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
+  },
+  limitText: { fontSize: 12, color: '#92400E', fontWeight: '500' },
 });
