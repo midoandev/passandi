@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
@@ -21,13 +22,19 @@ import {
 } from "../model/useVaultQuery";
 import type { VaultCategory } from "@/entities/vault";
 import {
-  isAllCategory, isFavoriteCategory,
+  isAllCategory, isFavoriteCategory, isSystemCategory,
 } from "@/shared/config/categoryHelpers";
+import { useSubscriptionTier } from "@/features/premium/model/premiumStore";
+import { canCreateCategory } from "@/shared/lib/premium/premiumUtils";
+import { UpgradePrompt } from "@/shared/ui";
 
 export function CategoryScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const tier = useSubscriptionTier();
+  const canAddCustom = canCreateCategory(tier, 0);
 
   const [sheetVisible, setSheetVisible] = useState(false);
   const [editItem, setEditItem] = useState<VaultCategory | null>(null);
@@ -147,7 +154,7 @@ export function CategoryScreen() {
                   totalCount={defaultCategories.length}
                   itemCount={getItemCount(cat)}
                   isDragging={draggingId === cat.id}
-                  isSystem={["Semua", "Favorit"].includes(cat.label)}
+                  isSystem={isSystemCategory(cat)}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onEdit={handleEdit}
@@ -174,7 +181,7 @@ export function CategoryScreen() {
                     totalCount={localCustom.length}
                     itemCount={getItemCount(cat)}
                     isDragging={draggingId === cat.id}
-                    isSystem={["Semua", "Favorit"].includes(cat.label)}
+                    isSystem={isSystemCategory(cat)}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onEdit={handleEdit}
@@ -182,7 +189,7 @@ export function CategoryScreen() {
                   />
                 ))}
               </View>
-            ) : (
+            ) : canAddCustom ? (
               <TouchableOpacity
                 onPress={handleAdd}
                 style={[styles.emptyBtn, {
@@ -199,6 +206,12 @@ export function CategoryScreen() {
                   {t("category.add_first")}
                 </Text>
               </TouchableOpacity>
+            ) : (
+              <UpgradePrompt
+                featureName={t('premium.feature_custom_categories')}
+                message={t('premium.custom_categories_message')}
+                onUpgrade={() => router.push('/(premium)/paywall')}
+              />
             )}
 
             {/* Info Box */}

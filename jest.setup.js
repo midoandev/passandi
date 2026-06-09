@@ -1,23 +1,17 @@
 require('@testing-library/jest-native/extend-expect');
+import "react-native-gesture-handler/jestSetup";
 
 // Mock react-native-reanimated
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
+jest.mock("react-native-reanimated", () => {
+  const Reanimated = require("react-native-reanimated/mock");
+  Reanimated.default.call = () => { };
   return Reanimated;
 });
 
-// Mock expo modules
-jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    back: jest.fn(),
-  })),
+jest.mock("expo-router", () => ({
+  router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
+  useSegments: jest.fn(() => []),
   useLocalSearchParams: jest.fn(() => ({})),
-  Stack: { Screen: jest.fn() },
-  Tabs: { Screen: jest.fn() },
-  Link: jest.fn(({ children }) => children),
 }));
 
 jest.mock('expo-secure-store', () => ({

@@ -18,7 +18,7 @@ type Props = {
   item: VaultCategory;
   index: number;
   totalCount: number;
-  itemCount: number;
+  itemCount?: number | 0;
   isDragging: boolean;
   onDragStart: (id: string) => void;
   onDragEnd: (id: string, newIndex: number) => void;

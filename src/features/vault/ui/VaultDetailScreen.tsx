@@ -187,7 +187,7 @@ export function VaultDetailScreen() {
             >
               <Ionicons name="globe-outline" size={18} color={colors.brand.blue} />
               <Text style={[styles.quickBtnText, { color: colors.brand.blue }]}>
-                {t("common.open_url")}
+                {t("detail.open_url")}
               </Text>
             </TouchableOpacity>
           )}

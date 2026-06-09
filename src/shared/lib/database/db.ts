@@ -53,5 +53,17 @@ const initDb = async (db: SQLite.SQLiteDatabase): Promise<void> => {
       is_deleted      INTEGER NOT NULL DEFAULT 0,
       updated_at      INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS user_profiles (
+      id                TEXT PRIMARY KEY,
+      user_id           TEXT NOT NULL UNIQUE,
+      email             TEXT,
+      full_name         TEXT,
+      subscription_tier TEXT NOT NULL DEFAULT 'free',
+      is_premium        INTEGER NOT NULL DEFAULT 0,
+      premium_expires_at INTEGER,
+      created_at        INTEGER NOT NULL,
+      updated_at        INTEGER NOT NULL
+    );
   `);
 };

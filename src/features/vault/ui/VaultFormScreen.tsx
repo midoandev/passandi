@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Switch,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -27,7 +26,8 @@ import {
 import type { VaultItemForm, CustomField, IconType } from "@/entities/vault";
 import { ICON_COLORS } from "../model/iconData";
 import { useVaultItems } from "../model/useVaultQuery";
-import { AppButton } from "../../../shared/ui";
+import { useSubscriptionTier } from "@/features/premium/model/premiumStore";
+import { canAddVaultItem, canAddCustomField } from "@/shared/lib/premium/premiumUtils";
 
 const DEFAULT_FORM: VaultItemForm = {
   title: "",
@@ -97,6 +97,11 @@ export function VaultFormScreen() {
   };
 
   const addCustomField = () => {
+    if (!canAddCustomField(tier, form.customFields.length)) {
+      Alert.alert(t('premium.limit_reached_title'), t('premium.custom_fields_message'));
+      return;
+    }
+
     const newField: CustomField = {
       id: Date.now().toString(),
       label: "",
@@ -120,9 +125,17 @@ export function VaultFormScreen() {
     );
   };
 
+  const tier = useSubscriptionTier();
+  const isEditMode = !!id;
+
   const handleSave = async () => {
     if (!form.title.trim()) {
       Alert.alert(t("common.error"), t("vault.error_title_required"));
+      return;
+    }
+
+    if (!isEditMode && !canAddVaultItem(tier, items.length)) {
+      Alert.alert(t('premium.limit_reached_title'), t('premium.limit_reached_message', { count: 10 }));
       return;
     }
 

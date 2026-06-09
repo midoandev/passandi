@@ -336,4 +336,61 @@ export default {
     open_source: "Open Source Libraries",
     changelog: "Changelog",
   },
+
+  // ── Premium ─────────────────────────────────────────────────
+  premium: {
+    badge_pro: "PRO",
+    badge_locked: "LOCKED",
+    upgrade_to_premium: "Upgrade to Premium",
+
+    // Feature names
+    feature_unlimited_items: "Unlimited Vault Items",
+    feature_custom_categories: "Custom Categories",
+    feature_custom_fields: "Custom Fields",
+    feature_biometric_lock: "Biometric Lock",
+    feature_cloud_sync: "Auto Cloud Sync",
+    feature_export_vault: "Export Vault",
+    feature_password_generator: "Advanced Password Generator",
+
+    // Messages
+    limit_reached_title: "Limit Reached",
+    limit_reached_message: "You've added {{count}} items! Upgrade to Premium for unlimited storage.",
+    custom_categories_message: "Create custom categories with Premium",
+    custom_fields_message: "Add unlimited custom fields with Premium",
+    biometric_message: "Unlock faster with Face ID or Fingerprint. Available in Premium.",
+    cloud_sync_message: "Auto backup to cloud with Premium",
+    export_message: "Export your vault with Premium",
+
+    // Pricing
+    price_idr: "Rp 49,000",
+    price_usd: "$3.49",
+    lifetime_access: "Lifetime Access",
+    one_time_purchase: "Pay Once, Use Forever",
+
+    // Benefits
+    benefit_unlimited: "Unlimited vault items",
+    benefit_categories: "Custom categories",
+    benefit_fields: "Unlimited custom fields",
+    benefit_biometric: "Unlock with Face ID/Fingerprint",
+    benefit_sync: "Auto cloud sync",
+    benefit_export: "Export vault (CSV/JSON)",
+    benefit_generator: "Advanced password generator",
+    benefit_updates: "Priority updates",
+
+    // Screen
+    title: "Upgrade to Premium",
+    subtitle: "Unlock all features and get the best experience",
+    current_plan: "Current Plan",
+    free_plan: "Free",
+    premium_plan: "Premium",
+    upgrade_button: "Upgrade Now",
+    restore_purchase: "Restore Purchase",
+
+    // Status
+    loading: "Loading...",
+    processing: "Processing purchase...",
+    success: "Success! Welcome to Premium",
+    error: "Purchase failed",
+    already_premium: "You're already Premium!",
+  },
 } as const;

@@ -1,3 +1,4 @@
+import "react-native-gesture-handler";
 import "@/shared/lib/i18n";
 import { useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -9,6 +10,7 @@ import { useAuthStore } from "@/features/auth/model/authStore";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useNetworkSync } from "@/shared/lib/sync/useNetworkSync";
 import { usePendingCount } from "@/shared/lib/sync/usePendingCount";
+import { usePremiumStore } from "@/features/premium/model/premiumStore";
 import { useSettingsStore } from "@/features/settings/model/settingsStore";
 
 
@@ -69,6 +71,20 @@ function AuthGate() {
   return null;
 }
 
+function PremiumProvider() {
+  const user = useAuthStore((s) => s.user);
+  const initialized = useAuthStore((s) => s.initialized);
+  const checkPremiumStatus = usePremiumStore((s) => s.checkPremiumStatus);
+
+  useEffect(() => {
+    if (initialized && user) {
+      checkPremiumStatus(user.id);
+    }
+  }, [initialized, user]);
+
+  return null;
+}
+
 function SyncProvider() {
   useNetworkSync();
   usePendingCount();
@@ -96,6 +112,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthGate />
+          <PremiumProvider />
           <AppStatusBar />
           <SyncProvider />
           <Stack screenOptions={{ headerShown: false }} />

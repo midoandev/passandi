@@ -337,4 +337,61 @@ export default {
     open_source: "Open Source Libraries",
     changelog: "Catatan Pembaruan",
   },
+
+  // ── Premium ─────────────────────────────────────────────────
+  premium: {
+    badge_pro: "PRO",
+    badge_locked: "TERKUNCI",
+    upgrade_to_premium: "Upgrade ke Premium",
+
+    // Feature names
+    feature_unlimited_items: "Item Vault Tak Terbatas",
+    feature_custom_categories: "Kategori Kustom",
+    feature_custom_fields: "Field Kustom",
+    feature_biometric_lock: "Kunci Biometrik",
+    feature_cloud_sync: "Sinkronisasi Cloud Otomatis",
+    feature_export_vault: "Ekspor Vault",
+    feature_password_generator: "Generator Password Lanjutan",
+
+    // Messages
+    limit_reached_title: "Batas Tercapai",
+    limit_reached_message: "Kamu sudah menambahkan {{count}} item! Upgrade ke Premium untuk penyimpanan tak terbatas.",
+    custom_categories_message: "Buat kategori kustom dengan Premium",
+    custom_fields_message: "Tambahkan field kustom tak terbatas dengan Premium",
+    biometric_message: "Buka lebih cepat dengan Face ID atau Sidik Jari. Tersedia di Premium.",
+    cloud_sync_message: "Backup otomatis ke cloud dengan Premium",
+    export_message: "Ekspor vault kamu dengan Premium",
+
+    // Pricing
+    price_idr: "Rp 49.000",
+    price_usd: "$3.49",
+    lifetime_access: "Akses Seumur Hidup",
+    one_time_purchase: "Beli Sekali, Pakai Selamanya",
+
+    // Benefits
+    benefit_unlimited: "Item vault tak terbatas",
+    benefit_categories: "Kategori kustom",
+    benefit_fields: "Field kustom tak terbatas",
+    benefit_biometric: "Unlock dengan Face ID/Sidik Jari",
+    benefit_sync: "Sinkronisasi cloud otomatis",
+    benefit_export: "Ekspor vault (CSV/JSON)",
+    benefit_generator: "Generator password lanjutan",
+    benefit_updates: "Update prioritas",
+
+    // Screen
+    title: "Upgrade ke Premium",
+    subtitle: "Buka semua fitur dan dapatkan pengalaman terbaik",
+    current_plan: "Plan Saat Ini",
+    free_plan: "Free",
+    premium_plan: "Premium",
+    upgrade_button: "Upgrade Sekarang",
+    restore_purchase: "Pulihkan Pembelian",
+
+    // Status
+    loading: "Memuat...",
+    processing: "Memproses pembelian...",
+    success: "Berhasil! Selamat datang di Premium",
+    error: "Gagal melakukan pembelian",
+    already_premium: "Kamu sudah Premium!",
+  },
 } as const;

@@ -8,11 +8,13 @@ import { useTheme } from "@/shared/config/ThemeContext";
 import { PinPad } from "@/shared/ui";
 import { useSecurityStore } from "@/features/auth/model/securityStore";
 import { useAuthStore } from "@/features/auth/model/authStore";
+import { usePremiumStore } from "@/features/premium/model/premiumStore";
 
 export function UnlockScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
+  const isPremium = usePremiumStore((s) => s.isPremium());
 
   const [pin, setPin] = useState("");
   const [isError, setIsError] = useState(false);
@@ -79,7 +81,7 @@ export function UnlockScreen() {
           setIsError(false);
           setPin("");
         }}
-        showBiometric={biometricAvailable}
+        showBiometric={biometricAvailable && isPremium}
         onBiometric={handleBiometric}
         footerText={t("unlock.switch_account")}
         onFooterPress={handleSignOut}
