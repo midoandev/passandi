@@ -1,10 +1,15 @@
 import { create } from "zustand";
 import { Session, User } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import * as WebBrowser from "expo-web-browser";
+import * as QueryParams from "expo-auth-session/build/QueryParams";
+import { makeRedirectUri } from "expo-auth-session";
 import { supabase } from "@/shared/lib/supabase";
 import { useSecurityStore } from "./securityStore";
 import { AppError, createAppError } from "../../../shared/utils/error";
 import { Result } from "../../../shared/utils/result";
+
+WebBrowser.maybeCompleteAuthSession();
 
 type AuthState = {
   session: Session | null;
@@ -72,14 +77,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signInGoogle: async () => {
     set({ loading: true });
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectTo = makeRedirectUri();
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "passandi://" },
+      options: { redirectTo },
     });
-    set({ loading: false });
     if (error) {
+      set({ loading: false });
       return { success: false, error: createAppError(error.message) };
     }
+    if (data?.url) {
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type === "success") {
+        const { params } = QueryParams.getQueryParams(result.url);
+        if (params?.code) {
+          await supabase.auth.exchangeCodeForSession(params.code);
+        }
+      }
+    }
+    set({ loading: false });
     return { success: true, data: undefined };
   },
 
