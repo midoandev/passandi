@@ -2,7 +2,7 @@ import "react-native-gesture-handler";
 import "@/shared/lib/i18n";
 import { useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Stack, router, useSegments } from "expo-router";
+import { Stack, router, useSegments, useRootNavigationState } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -25,11 +25,13 @@ function AuthGate() {
   const checkHasPin = useSecurityStore((s) => s.checkHasPin);
   const segments = useSegments();
   const isNavigating = useRef(false);
+  const navState = useRootNavigationState();
 
   const SECURITY_ROUTES = ["setup-pin", "unlock", "setup-success"];
 
   useEffect(() => {
-    if (!initialized || isNavigating.current) return;
+    // Guard: navigation container not mounted yet
+    if (!navState?.key || !initialized || isNavigating.current) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const currentRoute = (segments[1] as string) ?? "";
