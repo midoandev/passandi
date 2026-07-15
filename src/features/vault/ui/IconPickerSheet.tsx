@@ -8,6 +8,7 @@ import {
   Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { IoniconsName } from "@/shared/lib/iconTypes";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { AppBar } from "@/shared/ui/AppBar";
@@ -61,7 +62,7 @@ export function IconPickerSheet({
         {activeTab === "emoji" ? (
           <Text style={styles.previewEmoji}>{selValue}</Text>
         ) : activeTab === "ionicon" ? (
-          <Ionicons name={selValue as any} size={32} color={selColor} />
+          <Ionicons name={selValue as IoniconsName} size={32} color={selColor} />
         ) : (
           <View style={[styles.colorBlock, { backgroundColor: selColor }]} />
         )}
@@ -181,7 +182,7 @@ export function IconPickerSheet({
                 ]}
               >
                 <Ionicons
-                  name={icon as any}
+                  name={icon}
                   size={22}
                   color={selValue === icon ? selColor : tokens.muted}
                 />

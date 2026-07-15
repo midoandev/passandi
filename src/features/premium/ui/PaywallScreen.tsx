@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { useTheme, colors } from '@/shared/config/ThemeContext';
@@ -17,7 +17,6 @@ import { PREMIUM_PRODUCT_IDS } from '@/shared/config/subscription';
 export function PaywallScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
-  const insets = useSafeAreaInsets();
 
   const purchaseStatus = usePurchaseStatus();
   const purchaseError = usePurchaseError();
@@ -83,11 +82,10 @@ export function PaywallScreen() {
 
   if (isAlreadyPremium) {
     return (
-      <ScrollView style={[styles.container, { backgroundColor: tokens.bg }]}
-        contentContainerStyle={{ paddingBottom: 40 }}>
+      <SafeAreaView style={[styles.container, { backgroundColor: tokens.bg }]}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={[styles.header, {
           backgroundColor: tokens.surface, borderBottomColor: tokens.border,
-          paddingTop: insets.top + 12,
         }]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Text style={[styles.backText, { color: colors.brand.blue }]}>← {t('common.back')}</Text>
@@ -96,15 +94,16 @@ export function PaywallScreen() {
           <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.already_premium')}</Text>
         </View>
       </ScrollView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: tokens.bg }]}
-      contentContainerStyle={{ paddingBottom: 40 }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: tokens.bg }]}>
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={[styles.header, {
         backgroundColor: tokens.surface, borderBottomColor: tokens.border,
-        paddingTop: insets.top + 12,
+        paddingTop: 12,
       }]}>
         <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
         <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.subtitle')}</Text>
@@ -179,6 +178,7 @@ export function PaywallScreen() {
         />
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

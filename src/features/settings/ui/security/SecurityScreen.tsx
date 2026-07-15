@@ -41,7 +41,7 @@ export function SecurityScreen() {
       t("settings.premium_feature_desc"),
       [
         { text: t("common.cancel"), style: "cancel" },
-        { text: t("settings.upgrade"), onPress: () => { } },
+        { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
       ]
     );
   };

@@ -128,8 +128,8 @@ export function CategoryScreen() {
     <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
       <ScrollView
         contentContainerStyle={[styles.scroll, {
-          paddingTop: insets.top + 16,
           paddingBottom: insets.bottom + 120,
+          paddingTop: 16,
         }]}
         showsVerticalScrollIndicator={false}
       >

@@ -1,24 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { AppButton } from "@/shared/ui/AppButton";
 
 export function SetupSuccessScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
-  const insets = useSafeAreaInsets();
-
   return (
-    <View
+    <SafeAreaView
       style={[
         styles.flex,
-        {
-          backgroundColor: tokens.bg,
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom + 24,
-        },
+        { backgroundColor: tokens.bg },
       ]}
     >
       <View style={styles.center}>
@@ -35,7 +29,7 @@ export function SetupSuccessScreen() {
         onPress={() => router.replace("/(app)/vault")}
         style={styles.btn}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

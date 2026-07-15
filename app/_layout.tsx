@@ -2,7 +2,7 @@ import "react-native-gesture-handler";
 import "@/shared/lib/i18n";
 import { useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Stack, router, useSegments, useRootNavigationState } from "expo-router";
+import { Stack, router, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -25,13 +25,11 @@ function AuthGate() {
   const checkHasPin = useSecurityStore((s) => s.checkHasPin);
   const segments = useSegments();
   const isNavigating = useRef(false);
-  const navState = useRootNavigationState();
 
   const SECURITY_ROUTES = ["setup-pin", "unlock", "setup-success"];
 
   useEffect(() => {
-    // Guard: navigation container not mounted yet
-    if (!navState?.key || !initialized || isNavigating.current) return;
+    if (!initialized || isNavigating.current) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const currentRoute = (segments[1] as string) ?? "";
@@ -83,7 +81,7 @@ function PremiumProvider() {
   useEffect(() => {
     if (!user) return;
 
-    let cleanup: () => void = () => {};
+    let cleanup: () => void = () => { };
 
     (async () => {
       const mod = await import('@/shared/lib/iap/iapManager');
@@ -110,7 +108,7 @@ function SyncProvider() {
 
 function AppStatusBar() {
   const { mode } = useTheme();
-  return <StatusBar style={mode === "dark" ? "light" : "dark"} />;
+  return <StatusBar style={"inverted"} />;
 }
 
 const queryClient = new QueryClient();
@@ -138,9 +136,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
+          <AppStatusBar />
           <AuthGate />
           <PremiumProvider />
-          <AppStatusBar />
           <SyncProvider />
           <Stack screenOptions={{ headerShown: false }} />
         </ThemeProvider>

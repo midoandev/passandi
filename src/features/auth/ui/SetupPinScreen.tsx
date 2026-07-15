@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { View, StyleSheet, Alert } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import { useTheme } from "@/shared/config/ThemeContext";
@@ -13,7 +13,6 @@ type Step = "create" | "confirm";
 export function SetupPinScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
-  const insets = useSafeAreaInsets();
 
   const [step, setStep] = useState<Step>("create");
   const [pin, setPin] = useState("");
@@ -46,11 +45,8 @@ export function SetupPinScreen() {
   };
 
   return (
-    <View style={[styles.flex, {
-      backgroundColor: tokens.bg,
-      paddingTop: insets.top + 16,
-      paddingBottom: insets.bottom + 24,
-    }]}>
+    <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
+      <View style={{ flex: 1, paddingVertical: 24 }}>
       <PinPad
         icon="🔢"
         title={step === "create"
@@ -71,7 +67,8 @@ export function SetupPinScreen() {
         steps={2}
         currentStep={step === "create" ? 1 : 2}
       />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 

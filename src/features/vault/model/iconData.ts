@@ -1,4 +1,5 @@
 import type { IconType } from "@/entities/vault";
+import type { IoniconsName } from "@/shared/lib/iconTypes";
 
 export const ICON_COLORS = [
   "#2563EB",
@@ -103,7 +104,7 @@ export const EMOJI_GROUPS = [
   },
 ];
 
-export const IONICON_GROUPS = [
+export const IONICON_GROUPS: { labelKey: string; icons: IoniconsName[] }[] = [
   {
     labelKey: "vault.icon_group_finance",
     icons: [

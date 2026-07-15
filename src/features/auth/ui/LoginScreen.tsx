@@ -10,7 +10,7 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { AppButton, AppInput } from "@/shared/ui";
 import { colors } from "@/shared/config/ThemeContext";
@@ -22,7 +22,6 @@ export function LoginScreen() {
   const { tokens, toggle, mode } = useTheme();
   const { t } = useTranslation();
 
-  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -45,11 +44,10 @@ export function LoginScreen() {
   };
 
   return (
+    <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
+    <SafeAreaView style={styles.flex}>
     <KeyboardAvoidingView
-      style={[
-        styles.flex,
-        { backgroundColor: tokens.bg, paddingTop: insets.top },
-      ]}
+      style={styles.flex}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -154,6 +152,8 @@ export function LoginScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
+    </View>
   );
 }
 

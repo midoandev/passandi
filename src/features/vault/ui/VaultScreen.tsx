@@ -202,14 +202,13 @@ export function VaultScreen() {
           />
         }
         contentContainerStyle={{
-          paddingTop: insets.top + 8,
           paddingBottom: 140,
           paddingHorizontal: 20,
           flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View>
+          <View style={{ paddingTop: insets.top + 8 }}>
             {/* Header */}
             <View style={styles.header}>
               <View>

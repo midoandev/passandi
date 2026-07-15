@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { View, StyleSheet, Alert } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -65,11 +65,8 @@ export function UnlockScreen() {
   };
 
   return (
-    <View style={[styles.flex, {
-      backgroundColor: tokens.bg,
-      paddingTop: insets.top + 20,
-      paddingBottom: insets.bottom + 24,
-    }]}>
+    <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
+      <View style={{ flex: 1, paddingVertical: 24 }}>
       <PinPad
         icon="shield" iconType="ionicon"
         title={t("unlock.title")}
@@ -86,7 +83,8 @@ export function UnlockScreen() {
         footerText={t("unlock.switch_account")}
         onFooterPress={handleSignOut}
       />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 

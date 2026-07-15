@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text, Animated, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { IoniconsName } from "@/shared/lib/iconTypes";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
 import { colors } from "@/shared/config/ThemeContext";
 import { useTheme } from "@/shared/config/ThemeContext";
@@ -38,28 +39,27 @@ export function SyncIndicator() {
 
   if (status === "idle" && isOnline && pendingCount === 0) return null;
 
-  const getConfig = () => {
-    if (!isOnline) return { icon: "cloud-offline-outline", color: tokens.subtle, text: t("sync.offline") };
-    if (status === "syncing") return { icon: "sync-outline", color: colors.brand.blue, text: t("sync.syncing") };
-    if (status === "success") return { icon: "checkmark-circle", color: "#10B981", text: t("sync.synced") };
-    if (status === "error") return { icon: "alert-circle-outline", color: colors.brand.danger, text: t("sync.error") };
-    if (pendingCount > 0) return { icon: "time-outline", color: colors.brand.gold, text: `${pendingCount} ${t("sync.pending")}` };
+  const iconConfig = (() => {
+    if (!isOnline) return { icon: "cloud-offline-outline" as const, color: tokens.subtle, text: t("sync.offline") };
+    if (status === "syncing") return { icon: "sync-outline" as const, color: colors.brand.blue, text: t("sync.syncing") };
+    if (status === "success") return { icon: "checkmark-circle" as const, color: "#10B981" as const, text: t("sync.synced") };
+    if (status === "error") return { icon: "alert-circle-outline" as const, color: colors.brand.danger, text: t("sync.error") };
+    if (pendingCount > 0) return { icon: "time-outline" as const, color: colors.brand.gold, text: `${pendingCount} ${t("sync.pending")}` };
     return null;
-  };
+  })();
 
-  const config = getConfig();
-  if (!config) return null;
+  if (!iconConfig) return null;
 
   return (
     <View style={[styles.wrap, {
       backgroundColor: tokens.surface,
-      borderColor: config.color + "44",
+      borderColor: iconConfig.color + "44",
     }]}>
       <Animated.View style={status === "syncing" ? { transform: [{ rotate: spin }] } : undefined}>
-        <Ionicons name={config.icon as any} size={12} color={config.color} />
+        <Ionicons name={iconConfig.icon} size={12} color={iconConfig.color} />
       </Animated.View>
-      <Text style={[styles.text, { color: config.color }]}>
-        {config.text}
+      <Text style={[styles.text, { color: iconConfig.color }]}>
+        {iconConfig.text}
       </Text>
     </View>
   );

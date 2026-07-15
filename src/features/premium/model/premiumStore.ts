@@ -4,7 +4,7 @@ import { SubscriptionTier } from '@/shared/config/subscription';
 import { isPremium } from '@/shared/lib/premium/premiumUtils';
 import type { Product, Purchase } from '@/shared/lib/iap/iapManager';
 import {
-  connectIap,
+  ensureConnected as connectIap,
   fetchProducts,
   requestPurchase,
   finishPurchase,
