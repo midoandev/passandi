@@ -3,174 +3,190 @@ import { getDb } from "@/shared/lib/database/db";
 import { encrypt, decrypt } from "@/shared/lib/encryption";
 import type { VaultItem, VaultItemForm } from "@/entities/vault";
 
-// Helper: row → VaultItem
-const rowToItem = async (row: any, userId: string): Promise<VaultItem> => ({
+const generateId = (): string => Crypto.randomUUID();
+
+// ── Query Helpers ──────────────────────────────────────────────
+
+const ITEM_FIELDS = `
+  id, server_id, user_id, title, category_id, is_favorite,
+  icon_type, icon_value, icon_color,
+  username, email, password, pin, phone, url,
+  notes, holder_name, expired_date, custom_fields
+`;
+
+const mapRow = (row: any): VaultItem => ({
   id: row.id,
+  serverId: row.server_id,
   userId: row.user_id,
   title: row.title,
   categoryId: row.category_id,
   isFavorite: row.is_favorite === 1,
-  iconType: row.icon_type,
+  iconType: row.icon_type as VaultItem["iconType"],
   iconValue: row.icon_value,
   iconColor: row.icon_color,
-  username: row.username ?? "",
-  email: row.email ?? "",
-  password: row.password ? await decrypt(row.password, userId) : "",
-  pin: row.pin ? await decrypt(row.pin, userId) : "",
-  phone: row.phone ?? "",
-  url: row.url ?? "",
-  notes: row.notes ?? "",
-  holderName: row.holder_name ?? "",
-  expiredDate: row.expired_date ?? "",
+  username: row.username ?? undefined,
+  email: row.email ?? undefined,
+  password: row.password ?? undefined,
+  pin: row.pin ?? undefined,
+  phone: row.phone ?? undefined,
+  url: row.url ?? undefined,
+  notes: row.notes ?? undefined,
+  holderName: row.holder_name ?? undefined,
+  expiredDate: row.expired_date ?? undefined,
   customFields: (() => {
     try { return JSON.parse(row.custom_fields || "[]"); } catch { return []; }
   })(),
-  createdAt: new Date(row.created_at).toISOString(),
-  updatedAt: new Date(row.updated_at).toISOString(),
+  updatedAt: row.updated_at,
 });
 
-// READ
+// ── READ ───────────────────────────────────────────────────────
+
 export const getLocalVaultItems = async (
-  userId: string
+  userId: string,
+  categoryId: string | null,
+  page: number,
+  limit: number,
+  searchQuery: string,
+): Promise<{ items: VaultItem[]; total: number }> => {
+  const db = await getDb();
+  const offset = (page - 1) * limit;
+
+  const conditions = ["user_id = ?"];
+  const params: any[] = [userId];
+
+  if (categoryId) {
+    conditions.push("category_id = ?");
+    // Always show non-deleted items
+    conditions.push("is_deleted = 0");
+    params.push(categoryId);
+  }
+  if (searchQuery) {
+    conditions.push("title LIKE ?");
+    params.push(`%${searchQuery}%`);
+  }
+
+  const where = conditions.join(" AND ");
+
+  const [{ count }] = await db.getAllAsync<any>(
+    `SELECT COUNT(*) as count FROM vault_items WHERE ${where}`,
+    params
+  );
+
+  const rows = await db.getAllAsync<any>(
+    `SELECT ${ITEM_FIELDS} FROM vault_items
+     WHERE ${where}
+     ORDER BY is_favorite DESC, title ASC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+
+  return { items: rows.map(mapRow), total: count };
+};
+
+export const getAllLocalItems = async (
+  userId: string,
 ): Promise<VaultItem[]> => {
   const db = await getDb();
   const rows = await db.getAllAsync<any>(
-    `SELECT * FROM vault_items
+    `SELECT ${ITEM_FIELDS} FROM vault_items
      WHERE user_id = ? AND is_deleted = 0
-     ORDER BY is_favorite DESC, updated_at DESC`,
+     ORDER BY title ASC`,
     [userId]
   );
-  return Promise.all(rows.map((r) => rowToItem(r, userId)));
+  return rows.map(mapRow);
 };
 
-const generateId = (): string => {
-  return Crypto.randomUUID();
+export const getVaultItemById = async (
+  id: string,
+): Promise<VaultItem | null> => {
+  const db = await getDb();
+  const row = await db.getFirstAsync<any>(
+    `SELECT ${ITEM_FIELDS} FROM vault_items WHERE id = ?`,
+    [id]
+  );
+  return row ? mapRow(row) : null;
 };
 
-// CREATE
+// ── CREATE ─────────────────────────────────────────────────────
+
 export const createLocalVaultItem = async (
   userId: string,
-  form: VaultItemForm
-): Promise<VaultItem> => {
+  form: VaultItemForm,
+): Promise<string> => {
   const db = await getDb();
   const id = generateId();
   const now = Date.now();
 
-  const encPassword = form.password ? await encrypt(form.password, userId) : null;
-  const encPin = form.pin ? await encrypt(form.pin, userId) : null;
-
   await db.runAsync(
     `INSERT INTO vault_items (
-      id, user_id, title, category_id, is_favorite,
+      id, server_id, user_id, title, category_id, is_favorite,
       icon_type, icon_value, icon_color,
       username, email, password, pin, phone, url,
       notes, holder_name, expired_date, custom_fields,
       local_sync_status, is_deleted, created_at, updated_at
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    ) VALUES (?, null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)`,
     [
-      id, userId, form.title, form.categoryId,
-      form.isFavorite ? 1 : 0,
+      id, userId,
+      form.title, form.categoryId, 0,
       form.iconType, form.iconValue, form.iconColor,
-      form.username || null,
-      form.email || null,
-      encPassword,
-      encPin,
-      form.phone || null,
-      form.url || null,
-      form.notes || null,
-      form.holderName || null,
-      form.expiredDate || null,
+      form.username ?? null, form.email ?? null,
+      form.password ?? null, form.pin ?? null,
+      form.phone ?? null, form.url ?? null,
+      form.notes ?? null, form.holderName ?? null,
+      form.expiredDate ?? null,
       JSON.stringify(form.customFields ?? []),
-      "pending", 0, now, now,
+      now, now,
     ]
   );
 
-  const row = await db.getFirstAsync<any>(
-    "SELECT * FROM vault_items WHERE id = ?", [id]
-  );
-  return rowToItem(row, userId);
+  return id;
 };
 
-// UPDATE
+// ── UPDATE ─────────────────────────────────────────────────────
+
 export const updateLocalVaultItem = async (
-  userId: string,
   id: string,
-  form: Partial<VaultItemForm>
-): Promise<VaultItem> => {
+  form: VaultItemForm,
+): Promise<void> => {
   const db = await getDb();
   const now = Date.now();
 
-  const encPassword = form.password !== undefined
-    ? (form.password ? await encrypt(form.password, userId) : null)
-    : undefined;
-
-  const encPin = form.pin !== undefined
-    ? (form.pin ? await encrypt(form.pin, userId) : null)
-    : undefined;
-
   await db.runAsync(
     `UPDATE vault_items SET
-      title           = COALESCE(?, title),
-      category_id     = COALESCE(?, category_id),
-      is_favorite     = COALESCE(?, is_favorite),
-      icon_type       = COALESCE(?, icon_type),
-      icon_value      = COALESCE(?, icon_value),
-      icon_color      = COALESCE(?, icon_color),
-      username        = ?,
-      email           = ?,
-      password        = COALESCE(?, password),
-      pin             = COALESCE(?, pin),
-      phone           = ?,
-      url             = ?,
-      notes           = ?,
-      holder_name     = ?,
-      expired_date    = ?,
-      custom_fields   = COALESCE(?, custom_fields),
-      local_sync_status = 'pending',
-      updated_at      = ?
-    WHERE id = ? AND user_id = ?`,
+      title = ?, category_id = ?,
+      icon_type = ?, icon_value = ?, icon_color = ?,
+      username = ?, email = ?,
+      password = ?, pin = ?, phone = ?, url = ?,
+      notes = ?, holder_name = ?, expired_date = ?,
+      custom_fields = ?,
+      local_sync_status = 'pending', updated_at = ?
+     WHERE id = ?`,
     [
-      form.title ?? null,
-      form.categoryId ?? null,
-      form.isFavorite !== undefined ? (form.isFavorite ? 1 : 0) : null,
-      form.iconType ?? null,
-      form.iconValue ?? null,
-      form.iconColor ?? null,
-      form.username ?? null,
-      form.email ?? null,
-      encPassword ?? null,
-      encPin ?? null,
-      form.phone ?? null,
-      form.url ?? null,
-      form.notes ?? null,
-      form.holderName ?? null,
+      form.title, form.categoryId,
+      form.iconType, form.iconValue, form.iconColor,
+      form.username ?? null, form.email ?? null,
+      form.password ?? null, form.pin ?? null,
+      form.phone ?? null, form.url ?? null,
+      form.notes ?? null, form.holderName ?? null,
       form.expiredDate ?? null,
-      form.customFields ? JSON.stringify(form.customFields) : null,
-      now, id, userId,
+      JSON.stringify(form.customFields ?? []),
+      now, id,
     ]
   );
-
-  const row = await db.getFirstAsync<any>(
-    "SELECT * FROM vault_items WHERE id = ?", [id]
-  );
-  return rowToItem(row, userId);
 };
 
-// DELETE (soft)
+// ── DELETE (soft) ──────────────────────────────────────────────
+
 export const deleteLocalVaultItem = async (
   userId: string,
   id: string
 ): Promise<void> => {
   const db = await getDb();
 
-  console.log("DB delete:", { userId, id });
-
   const existing = await db.getFirstAsync<any>(
     "SELECT id FROM vault_items WHERE id = ? AND user_id = ?",
     [id, userId]
   );
-
-  console.log("Found for delete:", existing);
 
   if (!existing) {
     throw new Error(`Item ${id} tidak ditemukan untuk user ${userId}`);
@@ -182,8 +198,6 @@ export const deleteLocalVaultItem = async (
      WHERE id = ? AND user_id = ?`,
     [Date.now(), id, userId]
   );
-
-  console.log("Delete done");
 };
 
 // TOGGLE FAVORITE
@@ -214,7 +228,7 @@ export const getPendingItems = async (userId: string) => {
 // MARK SYNCED
 export const markItemSynced = async (
   id: string,
-  serverId: string
+  serverId: string,
 ): Promise<void> => {
   const db = await getDb();
   await db.runAsync(
@@ -240,10 +254,7 @@ export const upsertItemFromServer = async (
   serverItem: any
 ): Promise<void> => {
   const db = await getDb();
-  const now = Date.now();
 
-  // Password dari server sudah encrypted — decrypt dulu untuk simpan ke local
-  // (local DB simpan plain, enkripsi ulang saat push ke server)
   const password = serverItem.password
     ? await decrypt(serverItem.password, userId) : null;
   const pin = serverItem.pin
@@ -255,37 +266,30 @@ export const upsertItemFromServer = async (
   );
 
   if (existing) {
-    const serverTime = new Date(serverItem.updated_at).getTime();
-    if (serverTime <= existing.updated_at) return;
-
     await db.runAsync(
       `UPDATE vault_items SET
         title = ?, category_id = ?, is_favorite = ?,
-        icon_type = ?, icon_value = ?, icon_color = ?,
         username = ?, email = ?, password = ?, pin = ?,
-        phone = ?, url = ?, notes = ?,
-        holder_name = ?, expired_date = ?, custom_fields = ?,
+        phone = ?, url = ?, notes = ?, holder_name = ?,
+        expired_date = ?, custom_fields = ?,
         local_sync_status = 'synced', updated_at = ?
-       WHERE server_id = ?`,
+       WHERE id = ?`,
       [
         serverItem.title, serverItem.category_id,
         serverItem.is_favorite ? 1 : 0,
-        serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
-        serverItem.username ?? null,
-        serverItem.email ?? null,
-        password,
-        pin,
-        serverItem.phone ?? null,
-        serverItem.url ?? null,
-        serverItem.notes ?? null,
+        serverItem.username ?? null, serverItem.email ?? null,
+        password, pin, serverItem.phone ?? null,
+        serverItem.url ?? null, serverItem.notes ?? null,
         serverItem.holder_name ?? null,
         serverItem.expired_date ?? null,
         JSON.stringify(serverItem.custom_fields ?? []),
         new Date(serverItem.updated_at).getTime(),
-        serverItem.id,
+        existing.id,
       ]
     );
   } else {
+    const id = generateId();
+    const now = new Date(serverItem.updated_at).getTime();
     await db.runAsync(
       `INSERT OR IGNORE INTO vault_items (
         id, server_id, user_id, title, category_id, is_favorite,
@@ -295,17 +299,15 @@ export const upsertItemFromServer = async (
         local_sync_status, is_deleted, created_at, updated_at
       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
-        generateId(), serverItem.id, userId,
+        id, serverItem.id, userId,
         serverItem.title, serverItem.category_id,
         serverItem.is_favorite ? 1 : 0,
-        serverItem.icon_type, serverItem.icon_value, serverItem.icon_color,
-        serverItem.username ?? null,
-        serverItem.email ?? null,
-        password,
-        pin,
-        serverItem.phone ?? null,
-        serverItem.url ?? null,
-        serverItem.notes ?? null,
+        serverItem.icon_type ?? "emoji",
+        serverItem.icon_value ?? "🔐",
+        serverItem.icon_color ?? "#2563EB",
+        serverItem.username ?? null, serverItem.email ?? null,
+        password, pin, serverItem.phone ?? null,
+        serverItem.url ?? null, serverItem.notes ?? null,
         serverItem.holder_name ?? null,
         serverItem.expired_date ?? null,
         JSON.stringify(serverItem.custom_fields ?? []),
@@ -314,4 +316,13 @@ export const upsertItemFromServer = async (
       ]
     );
   }
+};
+
+// CLEAR LOCAL — hapus semua vault items milik user
+export const clearLocalVaultData = async (userId: string): Promise<void> => {
+  const db = await getDb();
+  await db.runAsync(
+    "DELETE FROM vault_items WHERE user_id = ?",
+    [userId]
+  );
 };

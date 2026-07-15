@@ -74,7 +74,9 @@ export const useSecurityStore = create<SecurityState>((set) => ({
     try {
       await SecureStore.deleteItemAsync(getPinHashKey(userId));
       await SecureStore.deleteItemAsync(getHasPinKey(userId));
-    } catch { }
+    } catch {
+      // best-effort — item mungkin sudah tidak ada
+    }
     set({ hasPin: false });
   },
 }));

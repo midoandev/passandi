@@ -16,6 +16,7 @@ export default {
     ok: "OK",
     or: "or",
     back: "Back",
+    coming_soon: "Coming Soon",
 
     // States
     loading: "Loading...",
@@ -392,5 +393,13 @@ export default {
     success: "Success! Welcome to Premium",
     error: "Purchase failed",
     already_premium: "You're already Premium!",
+  },
+
+  // ── Maintenance ─────────────────────────────────────────────
+  maintenance: {
+    title: "Under Maintenance",
+    message: "We're currently performing maintenance.\nPlease check back in a moment.",
+    retry: "Try Again",
+    status: "System Status",
   },
 } as const;

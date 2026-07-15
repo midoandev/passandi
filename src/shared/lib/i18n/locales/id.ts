@@ -16,6 +16,7 @@ export default {
     ok: "OK",
     or: "atau",
     back: "Kembali",
+    coming_soon: "Coming Soon",
 
     // States
     loading: "Memuat...",
@@ -393,5 +394,13 @@ export default {
     success: "Berhasil! Selamat datang di Premium",
     error: "Gagal melakukan pembelian",
     already_premium: "Kamu sudah Premium!",
+  },
+
+  // ── Maintenance ─────────────────────────────────────────────
+  maintenance: {
+    title: "Sedang Pemeliharaan",
+    message: "Kami sedang melakukan pemeliharaan.\nSilakan coba lagi dalam beberapa saat.",
+    retry: "Coba Lagi",
+    status: "Status Sistem",
   },
 } as const;

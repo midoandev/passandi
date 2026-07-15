@@ -12,3 +12,6 @@ export { PremiumBadge } from "./PremiumBadge";
 export { UpgradePrompt } from "./UpgradePrompt";
 export { PremiumCard } from "./PremiumCard";
 export { UpgradeButton } from "./UpgradeButton";
+
+// Coming Soon
+export { ComingSoon } from "./ComingSoon";

@@ -98,7 +98,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const userId = get().user?.id;
     if (userId) {
       await useSecurityStore.getState().clearPin(userId);
-      // TODO: hapus vault data lokal saat vault sudah diimplementasi
+      const { clearLocalVaultData } = await import("@/features/vault/api/vaultApi");
+      await clearLocalVaultData(userId);
+      const { clearRemoteVaultData } = await import("@/shared/lib/database/seeder");
+      await clearRemoteVaultData(userId);
     }
     await supabase.auth.signOut();
     set({ session: null, user: null, loading: false });

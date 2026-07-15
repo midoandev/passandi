@@ -147,7 +147,7 @@ export function VaultFormScreen() {
       }
       router.back();
     } catch (e: any) {
-      console.log("Save error:", e); // ← lihat error detail di console
+      console.error("Save error:", e);
       Alert.alert(t("common.error"), e?.message ?? t("vault.error_save"));
     }
   };
