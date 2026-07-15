@@ -35,10 +35,8 @@ export function VaultDetailScreen() {
 
   const handleDelete = useCallback(() => {
     if (!item) {
-      console.log("Item not found, id:", id);
       return;
     }
-    console.log("Deleting item:", item.id, item.title);
 
     Alert.alert(
       t("common.delete"),
@@ -50,9 +48,7 @@ export function VaultDetailScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("Mutating delete for:", item.id);
               await deleteItem.mutateAsync(item.id);
-              console.log("Delete success, going back");
               router.back();
             } catch (e) {
               console.error("Delete error:", e);
