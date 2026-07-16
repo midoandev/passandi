@@ -199,10 +199,6 @@ export function SettingsScreen() {
             />
           </SettingGroup>
         )}
-        {/* App version kecil di bawah */}
-        <Text style={[styles.version, { color: tokens.subtle }]}>
-          Passandi · {t("settings.about_sub")}
-        </Text>
       </ScrollView>
     </View>
   );

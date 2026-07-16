@@ -24,6 +24,20 @@ export function SupportScreen() {
           onPress={() => Linking.openURL("mailto:support@passandi.app")}
         />
         <SettingRow
+          icon="document-text-outline"
+          iconBg="#06B6D422"
+          iconColor="#22D3EE"
+          title={t("settings.terms")}
+          onPress={() => Linking.openURL("https://passandi.app/terms")}
+        />
+        <SettingRow
+          icon="lock-closed-outline"
+          iconBg="#06B6D422"
+          iconColor="#22D3EE"
+          title={t("settings.privacy")}
+          onPress={() => Linking.openURL("https://passandi.app/privacy")}
+        />
+        <SettingRow
           icon="information-circle-outline"
           iconBg="#06B6D422"
           iconColor="#22D3EE"

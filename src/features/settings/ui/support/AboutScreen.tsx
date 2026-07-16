@@ -64,14 +64,14 @@ export function AboutScreen() {
           label={t("about.section_info")}
           style={styles.group}
         >
-          <SettingRow
+          {/* <SettingRow
             isFirst
             icon="phone-portrait-outline"
             iconBg={colors.brand.blue + "22"}
             iconColor={colors.brand.blue}
             title={t("about.platform")}
             rightText={t("about.platform_val")}
-          />
+          /> */}
           <SettingRow
             icon="code-slash-outline"
             iconBg={colors.brand.blue + "22"}
@@ -102,46 +102,6 @@ export function AboutScreen() {
           />
         </SettingGroup>
 
-        {/* Legal */}
-        <SettingGroup
-          label={t("about.section_legal")}
-          style={styles.group}
-        >
-          <SettingRow
-            isFirst
-            icon="document-text-outline"
-            iconBg="#06B6D422"
-            iconColor="#22D3EE"
-            title={t("settings.terms")}
-            onPress={() => Linking.openURL("https://passandi.app/terms")}
-          />
-          <SettingRow
-            icon="lock-closed-outline"
-            iconBg="#06B6D422"
-            iconColor="#22D3EE"
-            title={t("settings.privacy")}
-            onPress={() => Linking.openURL("https://passandi.app/privacy")}
-          />
-        </SettingGroup>
-
-        {/* Made with love */}
-        <Text style={[styles.madeWith, { color: tokens.subtle }]}>
-          {t("about.made_with")}
-        </Text>
-
-        {/* Tech Stack */}
-        <View style={styles.techRow}>
-          {["Expo", "React Native", "Supabase", "TypeScript"].map((tech) => (
-            <View key={tech} style={[styles.techBadge, {
-              backgroundColor: tokens.surface,
-              borderColor: tokens.border,
-            }]}>
-              <Text style={[styles.techText, { color: tokens.muted }]}>
-                {tech}
-              </Text>
-            </View>
-          ))}
-        </View>
       </ScrollView>
     </View>
   );

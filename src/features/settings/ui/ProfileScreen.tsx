@@ -158,6 +158,7 @@ export function ProfileScreen() {
               borderColor: colors.brand.gold + "33",
             }]}
             activeOpacity={0.8}
+            onPress={() => router.push("/(premium)/paywall")}
           >
             <View>
               <Text style={[styles.upgradeTitle, { color: colors.brand.gold }]}>
