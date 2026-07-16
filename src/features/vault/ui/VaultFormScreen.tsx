@@ -310,13 +310,29 @@ export function VaultFormScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <AppInput
-        label={t("common.password")}
-        placeholder={t("vault.field_password_placeholder")}
-        value={form.password ?? ""}
-        onChangeText={(v) => update("password", v)}
-        isPassword
-      />
+      <View style={styles.passRow}>
+        <View style={styles.passInput}>
+          <AppInput
+            label={t("common.password")}
+            placeholder={t("vault.field_password_placeholder")}
+            value={form.password ?? ""}
+            onChangeText={(v) => update("password", v)}
+            isPassword
+          />
+        </View>
+        <TouchableOpacity
+          style={[styles.genBtn, {
+            backgroundColor: colors.brand.blue + "22",
+            borderColor: colors.brand.blue + "44",
+          }]}
+          onPress={() => {
+            const { generatePassword } = require("@/shared/lib/password/generator");
+            update("password", generatePassword());
+          }}
+        >
+          <Ionicons name="flash-outline" size={18} color={colors.brand.blue} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -542,6 +558,13 @@ const styles = StyleSheet.create({
   },
   dateLabel: { fontSize: 11, letterSpacing: 0.5, marginBottom: 4 },
   dateValue: { fontSize: 15 },
+  passRow: { flexDirection: "row", gap: 10, alignItems: "flex-end", marginBottom: 12 },
+  passInput: { flex: 1 },
+  genBtn: {
+    width: 44, height: 44, borderRadius: 12,
+    borderWidth: 0.5, alignItems: "center",
+    justifyContent: "center", marginBottom: 0,
+  },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1.5,
