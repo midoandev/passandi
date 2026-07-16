@@ -127,9 +127,28 @@ export const deleteVaultKeys = async (): Promise<void> => {
 // ── Encrypt/Decrypt data ──────────────────────────────────────
 
 const getKey = async (pin?: string): Promise<Uint8Array> => {
+  // Direct key selalu diprioritaskan — untuk sync & background
+  const directHex = await SecureStore.getItemAsync(VAULT_KEY_DIRECT);
+  if (directHex) return aesjs.utils.hex.toBytes(directHex);
+
   const sessionPin = pin ?? getSessionPin();
-  if (sessionPin) return getKeyFromPin(sessionPin);
-  return getKeyFromDirect();
+  if (sessionPin) {
+    try {
+      return await getKeyFromPin(sessionPin);
+    } catch {
+      // VAULT_KEY_STORE belum ada (legacy data) — buat sekarang
+      const vaultKey = generateVaultKey();
+      const pinKey = await deriveKeyFromPin(sessionPin);
+      const encrypted = await aesEncryptKey(vaultKey, pinKey);
+      await SecureStore.setItemAsync(VAULT_KEY_STORE, encrypted);
+      await SecureStore.setItemAsync(VAULT_KEY_DIRECT, aesjs.utils.hex.fromBytes(vaultKey));
+      return vaultKey;
+    }
+  }
+
+  const bioHex = await SecureStore.getItemAsync(VAULT_KEY_BIOMETRIC_STORE);
+  if (!bioHex) throw new Error("Vault key not found");
+  return aesjs.utils.hex.toBytes(bioHex);
 };
 
 const randomIV = (): Uint8Array => {
