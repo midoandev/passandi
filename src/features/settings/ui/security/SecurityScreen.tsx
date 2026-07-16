@@ -8,6 +8,7 @@ import { SettingRow, SettingGroup } from "../components/SettingRow";
 import { OptionPickerModal } from "../components/OptionPickerModal";
 import { useSettingsStore } from "../../model/settingsStore";
 import { colors } from "@/shared/config/ThemeContext";
+import { supabase } from "@/shared/lib/supabase";
 
 type ModalType = "autolock" | "clipboard" | null;
 
@@ -35,15 +36,87 @@ export function SecurityScreen() {
     never: t("settings.clip_never"),
   };
 
-  const handlePremium = () => {
-    Alert.alert(
-      t("settings.premium_feature"),
-      t("settings.premium_feature_desc"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
-      ]
-    );
+  const handleTwoFactor = async () => {
+    const { usePremiumStore } = await import("@/features/premium/model/premiumStore");
+    if (!usePremiumStore.getState().isPremium()) {
+      Alert.alert(
+        t("settings.premium_feature"),
+        t("settings.premium_feature_desc"),
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
+        ]
+      );
+      return;
+    }
+    // Cek status 2FA dari server
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (data?.currentLevel === "aal2") {
+      // Sudah aktif — disable
+      Alert.alert(
+        t("settings.two_factor"),
+        t("settings.two_factor_already"),
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: t("common.ok"),
+            style: "destructive",
+            onPress: async () => {
+              // Unenroll semua factor
+              const factors = await supabase.auth.mfa.listFactors();
+              for (const f of factors.data?.all ?? []) {
+                await supabase.auth.mfa.unenroll({ factorId: f.id });
+              }
+              Alert.alert(t("common.success"), t("settings.two_factor_disabled"));
+            },
+          },
+        ]
+      );
+    } else {
+      // Belum aktif — mulai setup
+      try {
+        const { data: enrollment } = await supabase.auth.mfa.enroll({
+          factorType: "totp",
+        });
+        if (!enrollment?.totp?.qrCode) throw new Error("No QR code");
+        // Tampilkan QR code atau kode setup
+        Alert.alert(
+          t("settings.two_factor"),
+          t("settings.two_factor_setup", { code: enrollment.totp.qrCode }),
+          [
+            { text: t("common.cancel"), style: "cancel" },
+            {
+              text: t("common.confirm"),
+              onPress: async () => {
+                const { data: challenge } = await supabase.auth.mfa.challenge({
+                  factorId: enrollment.id,
+                });
+                if (challenge?.id) {
+                  Alert.alert(
+                    t("settings.two_factor"),
+                    t("settings.two_factor_verify"),
+                    [
+                      { text: t("common.cancel"), style: "cancel" },
+                      {
+                        text: t("common.confirm"),
+                        onPress: async () => {
+                          Alert.alert(
+                            t("common.success"),
+                            t("settings.two_factor_activated")
+                          );
+                        },
+                      },
+                    ]
+                  );
+                }
+              },
+            },
+          ]
+        );
+      } catch (e: any) {
+        Alert.alert(t("common.error"), e?.message ?? t("common.error"));
+      }
+    }
   };
 
   return (
@@ -75,7 +148,7 @@ export function SecurityScreen() {
           title={t("settings.two_factor")}
           subtitle={t("settings.two_factor_sub")}
           isPremium
-          onPress={handlePremium}
+          onPress={handleTwoFactor}
         />
         <SettingRow
           icon="timer-outline"
