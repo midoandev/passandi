@@ -2,17 +2,12 @@ import { create } from "zustand";
 import * as ExpoCrypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { setupVaultKey, changeVaultKey, deleteVaultKeys } from "@/shared/lib/encryption";
+import { setSessionPin } from "@/shared/lib/sessionPin";
 
 import { AppError, createAppError } from "../../../shared/utils/error";
 
 const getPinHashKey = (userId: string) => `passandi_pin_hash_${userId}`;
 const getHasPinKey = (userId: string) => `passandi_has_pin_${userId}`;
-
-let _cachedPin: string | null = null;
-
-/** Temporary PIN cache for session — allows vaultApi encrypt/decrypt */
-export const getSessionPin = (): string | null => _cachedPin;
-export const setSessionPin = (pin: string | null) => { _cachedPin = pin; };
 
 const hashPin = async (pin: string): Promise<string> => {
   const salt = process.env.EXPO_PUBLIC_PIN_SALT ?? "dev_fallback_salt";

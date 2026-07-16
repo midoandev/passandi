@@ -12,7 +12,7 @@ const ENCRYPTED_FIELDS = [
   "notes", "holderName", "expiredDate", "customFields",
 ] as const;
 
-import { getSessionPin } from "@/features/auth/model/securityStore";
+import { getSessionPin } from "@/shared/lib/sessionPin";
 
 const decryptItem = async (item: VaultItem): Promise<VaultItem> => {
   const pin = getSessionPin();

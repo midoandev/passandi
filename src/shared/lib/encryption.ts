@@ -1,7 +1,7 @@
 import * as ExpoCrypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import * as aesjs from "aes-js";
-import { getSessionPin } from "@/features/auth/model/securityStore";
+import { getSessionPin } from "@/shared/lib/sessionPin";
 
 const VAULT_KEY_STORE = "passandi_vault_key";
 const VAULT_KEY_BIOMETRIC_STORE = "passandi_vault_key_biometric";
