@@ -1,10 +1,9 @@
 import {
   View, Text, ScrollView,
-  TouchableOpacity, StyleSheet, Linking, Alert, Image,
+  StyleSheet, Linking, Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { AppBar } from "@/shared/ui/AppBar";
@@ -31,7 +30,7 @@ export function AboutScreen() {
         {/* Hero */}
         <View style={styles.hero}>
           <Image
-            source={require("@/assets/images/icon.png")}
+            source={require("../../../../../assets/images/icon.png")}
             style={styles.appIcon}
           />
           <Text style={[styles.appName, { color: tokens.text }]}>

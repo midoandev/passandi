@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme, colors } from '@/shared/config/ThemeContext';
-import { PremiumCard, UpgradeButton } from "@/shared/ui";
+import { UpgradeButton } from "@/shared/ui";
+import type { IoniconsName } from '@/shared/lib/iconTypes';
 import {
   usePremiumStore,
   usePurchaseStatus,
@@ -13,6 +15,21 @@ import {
 } from '../model/premiumStore';
 import { useAuthStore } from '@/features/auth/model/authStore';
 import { PREMIUM_PRODUCT_IDS } from '@/shared/config/subscription';
+
+type FeatureItem = {
+  icon: IoniconsName;
+  titleKey: string;
+  descKey: string;
+};
+
+const FEATURES: FeatureItem[] = [
+  { icon: "infinite-outline", titleKey: 'premium.feature_unlimited_items', descKey: 'premium.limit_reached_message' },
+  { icon: "layers-outline", titleKey: 'premium.feature_custom_categories', descKey: 'premium.custom_categories_message' },
+  { icon: "list-outline", titleKey: 'premium.feature_custom_fields', descKey: 'premium.custom_fields_message' },
+  { icon: "finger-print-outline", titleKey: 'premium.feature_biometric_lock', descKey: 'premium.biometric_message' },
+  { icon: "cloud-done-outline", titleKey: 'premium.feature_cloud_sync', descKey: 'premium.cloud_sync_message' },
+  { icon: "download-outline", titleKey: 'premium.feature_export_vault', descKey: 'premium.export_message' },
+];
 
 export function PaywallScreen() {
   const { t } = useTranslation();
@@ -31,20 +48,7 @@ export function PaywallScreen() {
   const isPurchasing = purchaseStatus === 'purchasing';
   const isRestoring = purchaseStatus === 'restoring';
   const userId = useAuthStore((s) => s.user?.id ?? '');
-
-  const features = [
-    { icon: '💾', titleKey: 'premium.feature_unlimited_items', descKey: 'premium.limit_reached_message' as const },
-    { icon: '🗂️', titleKey: 'premium.feature_custom_categories', descKey: 'premium.custom_categories_message' as const },
-    { icon: '⚡', titleKey: 'premium.feature_custom_fields', descKey: 'premium.custom_fields_message' as const },
-    { icon: '👁️', titleKey: 'premium.feature_biometric_lock', descKey: 'premium.biometric_message' as const },
-    { icon: '☁️', titleKey: 'premium.feature_cloud_sync', descKey: 'premium.cloud_sync_message' as const },
-    { icon: '📄', titleKey: 'premium.feature_export_vault', descKey: 'premium.export_message' as const },
-  ];
-
-  const compareItems = [
-    'premium.feature_unlimited_items', 'premium.feature_custom_categories', 'premium.feature_custom_fields',
-    'premium.feature_biometric_lock', 'premium.feature_cloud_sync', 'premium.feature_export_vault',
-  ] as const;
+  const isLoading = purchaseStatus === 'loading_products';
 
   useEffect(() => {
     if (isAlreadyPremium) return;
@@ -82,128 +86,142 @@ export function PaywallScreen() {
 
   if (isAlreadyPremium) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: tokens.bg }]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={[styles.header, {
-          backgroundColor: tokens.surface, borderBottomColor: tokens.border,
-        }]}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={[styles.backText, { color: colors.brand.blue }]}>← {t('common.back')}</Text>
+      <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
+        <View style={styles.alreadyWrap}>
+          <Ionicons name="shield-checkmark" size={64} color={colors.brand.gold} />
+          <Text style={[styles.alreadyTitle, { color: tokens.text }]}>
+            {t('premium.title')}
+          </Text>
+          <Text style={[styles.alreadySub, { color: tokens.muted }]}>
+            {t('premium.already_premium')}
+          </Text>
+          <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
+            <Text style={[styles.backLinkText, { color: colors.brand.blue }]}>
+              {`← ${t('common.back')}`}
+            </Text>
           </TouchableOpacity>
-          <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
-          <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.already_premium')}</Text>
         </View>
-      </ScrollView>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: tokens.bg }]}>
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={[styles.header, {
-        backgroundColor: tokens.surface, borderBottomColor: tokens.border,
-        paddingTop: 12,
-      }]}>
-        <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
-        <Text style={[styles.subtitle, { color: tokens.muted }]}>{t('premium.subtitle')}</Text>
-      </View>
-
-      <View style={[styles.pricing, {
-        backgroundColor: tokens.surface, borderColor: tokens.border,
-      }]}>
-        <View style={styles.priceBox}>
-          <Text style={[styles.priceLabel, { color: tokens.subtle }]}>
-            {t('premium.lifetime_access')}
+    <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: tokens.text }]}>{t('premium.title')}</Text>
+          <Text style={[styles.subtitle, { color: tokens.muted }]}>
+            {t('premium.subtitle')}
           </Text>
+        </View>
+
+        {/* Pricing */}
+        <View style={[styles.pricingCard, {
+          backgroundColor: tokens.surface,
+          borderColor: colors.brand.gold + "44",
+        }]}>
+          <Ionicons name="diamond" size={28} color={colors.brand.gold} />
           <Text style={[styles.price, { color: tokens.text }]}>
             {products[0]?.price ?? t('premium.price_idr')}
           </Text>
-          <Text style={[styles.priceSub, { color: tokens.subtle }]}>
+          <Text style={[styles.priceLabel, { color: tokens.subtle }]}>
             {t('premium.one_time_purchase')}
           </Text>
         </View>
-      </View>
 
-      <View style={styles.features}>
-        <Text style={[styles.featuresTitle, { color: tokens.text }]}>
-          {t('premium.subtitle')}
-        </Text>
-        <View style={styles.featuresGrid}>
-          {features.map((f, i) => (
-            <PremiumCard
-              key={i}
-              icon={f.icon}
-              title={t(f.titleKey)}
-              description={t(f.descKey, { count: 10 })}
-              isPremiumFeature={true}
-              isLocked={true}
-              onUpgrade={handleUpgrade}
-            />
+        {/* Features */}
+        <View style={styles.featuresWrap}>
+          {FEATURES.map((f, i) => (
+            <View key={i} style={[styles.featureRow, {
+              backgroundColor: tokens.surface,
+              borderColor: tokens.border,
+            }]}>
+              <View style={[styles.featureIcon, {
+                backgroundColor: colors.brand.blue + "22",
+              }]}>
+                <Ionicons name={f.icon} size={20} color={colors.brand.blue} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={[styles.featureTitle, { color: tokens.text }]}>
+                  {t(f.titleKey)}
+                </Text>
+                <Text style={[styles.featureDesc, { color: tokens.muted }]}>
+                  {t(f.descKey)}
+                </Text>
+              </View>
+            </View>
           ))}
         </View>
-      </View>
 
-      <View style={[styles.compare, {
-        backgroundColor: tokens.surface, borderColor: tokens.border,
-      }]}>
-        <Text style={[styles.compareTitle, { color: tokens.text }]}>
-          {t('premium.subtitle')}
-        </Text>
-        {compareItems.map((key, i) => (
-          <View key={i} style={styles.compareRow}>
-            <Text style={[styles.compareFeature, { color: tokens.text }]}>
-              {t(key)}
+        {/* CTA */}
+        <View style={styles.ctaWrap}>
+          <UpgradeButton
+            onPress={handleUpgrade}
+            loading={isPurchasing || isLoading}
+            disabled={isPurchasing || isRestoring || isLoading}
+            size="lg"
+          />
+          <TouchableOpacity
+            style={styles.restoreBtn}
+            onPress={handleRestore}
+            disabled={isRestoring}
+          >
+            <Text style={[styles.restoreText, { color: tokens.subtle }]}>
+              {isRestoring ? t('premium.loading') : t('premium.restore_purchase')}
             </Text>
-            <Text style={styles.freeCol}>❌</Text>
-            <Text style={styles.premiumCol}>✅</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.secondaryBtn}
-          onPress={handleRestore}
-          disabled={isRestoring}
-        >
-          <Text style={[styles.secondaryText, { color: tokens.subtle }]}>
-            {isRestoring ? t('premium.loading') : t('premium.restore_purchase')}
-          </Text>
-        </TouchableOpacity>
-        <UpgradeButton
-          onPress={handleUpgrade}
-          loading={isPurchasing}
-          disabled={isPurchasing || isRestoring || purchaseStatus === 'loading_products'}
-        />
-      </View>
-    </ScrollView>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { padding: 20, borderBottomWidth: 1 },
-  backBtn: { paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start', marginBottom: 12 },
-  backText: { fontSize: 14, fontWeight: '600' },
-  title: { fontSize: 24, fontWeight: '800', marginBottom: 8 },
+  flex: { flex: 1 },
+  scroll: { paddingBottom: 40 },
+
+  // Already premium
+  alreadyWrap: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 32, gap: 12,
+  },
+  alreadyTitle: { fontSize: 22, fontWeight: '700', textAlign: 'center' },
+  alreadySub: { fontSize: 14, textAlign: 'center' },
+  backLink: { marginTop: 16 },
+  backLinkText: { fontSize: 14, fontWeight: '500' },
+
+  // Header
+  header: { padding: 24, paddingBottom: 8 },
+  title: { fontSize: 28, fontWeight: '800', marginBottom: 6 },
   subtitle: { fontSize: 14, lineHeight: 20 },
-  pricing: { padding: 20, marginHorizontal: 16, borderRadius: 16, marginTop: 20, borderWidth: 1 },
-  priceBox: { alignItems: 'center', marginBottom: 16 },
-  priceLabel: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  price: { fontSize: 40, fontWeight: '800' },
-  priceSub: { fontSize: 13, marginTop: 4 },
-  features: { padding: 20 },
-  featuresTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  featuresGrid: { gap: 12 },
-  compare: { padding: 20, marginHorizontal: 16, borderRadius: 16, marginTop: 20 },
-  compareTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
-  compareRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  compareFeature: { flex: 1, fontSize: 14 },
-  freeCol: { fontSize: 16, width: 20, textAlign: 'center' },
-  premiumCol: { fontSize: 16, width: 20, textAlign: 'center' },
-  footer: { padding: 20, marginTop: 20 },
-  secondaryBtn: { paddingVertical: 14, alignItems: 'center', marginBottom: 12 },
-  secondaryText: { fontSize: 15, fontWeight: '600' },
+
+  // Pricing
+  pricingCard: {
+    marginHorizontal: 20, marginTop: 16,
+    borderRadius: 20, borderWidth: 1.5,
+    padding: 24, alignItems: 'center', gap: 8,
+  },
+  price: { fontSize: 34, fontWeight: '800' },
+  priceLabel: { fontSize: 13 },
+
+  // Features
+  featuresWrap: { paddingHorizontal: 20, marginTop: 20, gap: 10 },
+  featureRow: {
+    flexDirection: 'row', gap: 14,
+    padding: 14, borderRadius: 14,
+    borderWidth: 0.5, alignItems: 'center',
+  },
+  featureIcon: {
+    width: 40, height: 40, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  featureText: { flex: 1 },
+  featureTitle: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
+  featureDesc: { fontSize: 12, lineHeight: 17 },
+
+  // CTA
+  ctaWrap: { padding: 20, gap: 12 },
+  restoreBtn: { paddingVertical: 12, alignItems: 'center' },
+  restoreText: { fontSize: 14, fontWeight: '500' },
 });

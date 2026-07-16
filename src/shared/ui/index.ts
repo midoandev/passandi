@@ -10,7 +10,6 @@ export { SkeletonItem, SkeletonList } from "./SkeletonItem";
 // Premium components
 export { PremiumBadge } from "./PremiumBadge";
 export { UpgradePrompt } from "./UpgradePrompt";
-export { PremiumCard } from "./PremiumCard";
 export { UpgradeButton } from "./UpgradeButton";
 
 // Coming Soon
