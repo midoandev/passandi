@@ -187,6 +187,7 @@ export default {
     active_sessions_sub: "{{count}} devices connected",
     export_data: "Export Data",
     export_data_sub: "Export vault to encrypted file",
+    export_success: "Vault exported successfully",
     wipe_data: "Wipe All Data",
     wipe_data_sub: "Local wipe, account remains",
     contact_us: "Contact Us",

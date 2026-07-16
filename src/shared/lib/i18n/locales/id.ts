@@ -187,6 +187,7 @@ export default {
     active_sessions_sub: "{{count}} device terhubung",
     export_data: "Export Data",
     export_data_sub: "Ekspor vault ke file terenkripsi",
+    export_success: "Vault berhasil diekspor",
     wipe_data: "Hapus Semua Data",
     wipe_data_sub: "Wipe lokal, akun tetap ada",
     contact_us: "Hubungi Kami",

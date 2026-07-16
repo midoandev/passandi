@@ -6,21 +6,33 @@ import { AppBar } from "@/shared/ui/AppBar";
 import { SettingRow, SettingGroup } from "../components/SettingRow";
 import { useAuthStore } from "@/features/auth/model/authStore";
 import { colors } from "@/shared/config/ThemeContext";
+import { useIsPremium } from "@/features/premium";
+import { exportVault } from "@/shared/lib/export/exportVault";
 
 export function AccountScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const signOut = useAuthStore((s) => s.signOut);
+  const isPremium = useIsPremium();
 
-  const handlePremium = () => {
-    Alert.alert(
-      t("settings.premium_feature"),
-      t("settings.premium_feature_desc"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
-      ]
-    );
+  const handleExport = async () => {
+    if (!isPremium) {
+      Alert.alert(
+        t("settings.premium_feature"),
+        t("settings.premium_feature_desc"),
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
+        ]
+      );
+      return;
+    }
+    try {
+      await exportVault("json");
+      Alert.alert(t("common.success"), t("settings.export_success"));
+    } catch (e: any) {
+      Alert.alert(t("common.error"), e?.message ?? t("common.error"));
+    }
   };
 
   const handleLogout = () => {
@@ -50,8 +62,7 @@ export function AccountScreen() {
           iconColor="#34D399"
           title={t("settings.export_data")}
           subtitle={t("settings.export_data_sub")}
-          isPremium
-          onPress={handlePremium}
+          onPress={handleExport}
         />
         <SettingRow
           icon="log-out-outline"

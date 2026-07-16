@@ -380,7 +380,7 @@ export function VaultFormScreen() {
           value={form.expiredDate ? new Date(form.expiredDate) : new Date()}
           mode="date"
           display={Platform.OS === "ios" ? "spinner" : "default"}
-          onChange={(_e, date) => {
+          onValueChange={(_e, date) => {
             setShowDatePicker(Platform.OS === "ios");
             if (date) {
               const mm = String(date.getMonth() + 1).padStart(2, "0");
