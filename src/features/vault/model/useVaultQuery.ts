@@ -26,7 +26,10 @@ export const useVaultItems = () => {
   const userId = useAuthStore((s) => s.user?.id ?? "");
   return useQuery({
     queryKey: VAULT_KEY(userId),
-    queryFn: () => getLocalVaultItems(userId),
+    queryFn: async () => {
+      const result = await getLocalVaultItems(userId, null, 1, 9999, "");
+      return result.items;
+    },
     enabled: !!userId,
     staleTime: Infinity,
   });
@@ -75,8 +78,8 @@ export const useUpdateVaultItem = () => {
   const { userId, invalidateVault, sync } = useVaultMutationBase();
 
   return useMutation({
-    mutationFn: ({ id, form }: { id: string; form: Partial<VaultItemForm> }) =>
-      updateLocalVaultItem(userId, id, form),
+    mutationFn: ({ id, form }: { id: string; form: VaultItemForm }) =>
+      updateLocalVaultItem(id, form),
     onSuccess: () => { invalidateVault(); sync(); },
   });
 };
