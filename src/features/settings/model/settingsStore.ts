@@ -51,8 +51,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     try {
       const raw = await SecureStore.getItemAsync(KEY);
       const data = raw ? JSON.parse(raw) : {};
-      set({ ...DEFAULT, ...data, initialized: true });
-      if (data.language) i18n.changeLanguage(data.language);
+      const language = data.language ?? (i18n.language as Language);
+      if (i18n.language !== language) i18n.changeLanguage(language);
+      set({ ...DEFAULT, ...data, language, initialized: true });
     } catch {
       set({ initialized: true });
     }
