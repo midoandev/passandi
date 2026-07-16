@@ -93,13 +93,13 @@ export function AboutScreen() {
             title={t("about.changelog")}
             onPress={() => Linking.openURL("https://midoandev.github.io/passandi/#changelog")}
           />
-          <SettingRow
+          {/* <SettingRow
             icon="cube-outline"
             iconBg={colors.brand.blue + "22"}
             iconColor={colors.brand.blue}
             title={t("about.open_source")}
             onPress={() => Linking.openURL("https://mido.github.io/passandi/#licenses")}
-          />
+          /> */}
         </SettingGroup>
 
       </ScrollView>
