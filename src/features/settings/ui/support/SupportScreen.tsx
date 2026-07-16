@@ -28,14 +28,14 @@ export function SupportScreen() {
           iconBg="#06B6D422"
           iconColor="#22D3EE"
           title={t("settings.terms")}
-          onPress={() => Linking.openURL("https://passandi.app/terms")}
+          onPress={() => Linking.openURL("https://mido.github.io/passandi-web/#terms")}
         />
         <SettingRow
           icon="lock-closed-outline"
           iconBg="#06B6D422"
           iconColor="#22D3EE"
           title={t("settings.privacy")}
-          onPress={() => Linking.openURL("https://passandi.app/privacy")}
+          onPress={() => Linking.openURL("https://mido.github.io/passandi-web/#privacy")}
         />
         <SettingRow
           icon="information-circle-outline"
