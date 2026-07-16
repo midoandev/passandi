@@ -3,6 +3,7 @@ export {
   usePremiumStore,
   useSubscriptionTier,
   useIsPremium,
+  useIsExpired,
   useIsPremiumLoading,
   usePurchaseStatus,
   usePurchaseError,

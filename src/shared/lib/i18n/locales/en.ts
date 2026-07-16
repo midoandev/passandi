@@ -394,6 +394,10 @@ export default {
     benefit_export: "Export vault (CSV/JSON)",
     benefit_generator: "Advanced password generator",
     benefit_updates: "Priority updates",
+    expired_banner: "Pro Expired — Tap to Renew",
+    expired_title: "Pro Plan Expired",
+    expired_desc: "Your subscription has ended. You can still view and export your data.",
+    expired_renew: "Renew Pro",
 
     // Screen
     title: "Upgrade to Premium",

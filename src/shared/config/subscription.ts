@@ -3,41 +3,42 @@
  * Used throughout the app to check premium features
  */
 
-export type SubscriptionTier = 'free' | 'premium';
+export type SubscriptionTier = 'free' | 'premium' | 'expired';
 
 /**
  * Feature limits per subscription tier
  */
 export const SUBSCRIPTION_LIMITS = {
   free: {
-    // Vault limits
     maxVaultItems: 10,
     maxCustomCategories: 0,
     maxCustomFields: 0,
-
-    // Feature flags
     canUseBiometric: false,
     canUseCloudSync: false,
     canExportVault: false,
-    canUsePasswordGenerator: true, // Basic generator available
-
-    // UI limits
+    canUsePasswordGenerator: true,
+    maxPasswordHistory: 0,
+    canCustomizeTheme: false,
+  },
+  expired: {
+    maxVaultItems: 0,       // Tidak bisa ADD item baru
+    maxCustomCategories: 0,
+    maxCustomFields: 0,
+    canUseBiometric: false,
+    canUseCloudSync: false,
+    canExportVault: true,   // TETAP bisa export
+    canUsePasswordGenerator: true,
     maxPasswordHistory: 0,
     canCustomizeTheme: false,
   },
   premium: {
-    // Vault limits
     maxVaultItems: Infinity,
     maxCustomCategories: Infinity,
     maxCustomFields: Infinity,
-
-    // Feature flags
     canUseBiometric: true,
     canUseCloudSync: true,
     canExportVault: true,
     canUsePasswordGenerator: true,
-
-    // UI limits
     maxPasswordHistory: 10,
     canCustomizeTheme: true,
   },

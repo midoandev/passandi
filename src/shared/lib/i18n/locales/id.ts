@@ -395,6 +395,10 @@ export default {
     benefit_export: "Ekspor vault (CSV/JSON)",
     benefit_generator: "Generator password lanjutan",
     benefit_updates: "Update prioritas",
+    expired_banner: "Pro Kedaluwarsa — Ketuk untuk Perpanjang",
+    expired_title: "Paket Pro Kedaluwarsa",
+    expired_desc: "Langganan Anda telah berakhir. Anda masih bisa melihat dan mengekspor data.",
+    expired_renew: "Perpanjang Pro",
 
     // Screen
     title: "Upgrade ke Premium",

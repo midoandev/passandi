@@ -25,7 +25,8 @@ import type { VaultCategory, VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
 import { SyncIndicator, FloatingButton, SkeletonList } from "@/shared/ui";
 import { useSyncStore } from "@/shared/lib/sync/syncStore";
-import { useIsPremium } from "@/features/premium";
+import { useIsPremium, useIsExpired } from "@/features/premium";
+import { useSubscriptionTier } from "@/features/premium/model/premiumStore";
 import { SUBSCRIPTION_LIMITS } from "@/shared/config/subscription";
 import {
   isAllCategory, isFavoriteCategory, isSystemCategory,
@@ -144,7 +145,9 @@ export function VaultScreen() {
     "";
 
   const isPremium = useIsPremium();
-  const maxItems = SUBSCRIPTION_LIMITS[isPremium ? 'premium' : 'free'].maxVaultItems;
+  const isExpired = useIsExpired();
+  const tier = useSubscriptionTier();
+  const maxItems = SUBSCRIPTION_LIMITS[tier].maxVaultItems;
   const itemLimit = maxItems === Infinity ? 9999 : maxItems;
   const showLimit = !isPremium && items.length >= Math.min(8, itemLimit as number);
 
@@ -253,6 +256,26 @@ export function VaultScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* Expired banner */}
+            {isExpired && (
+              <TouchableOpacity
+                onPress={() => router.push('/(premium)/paywall')}
+                style={[styles.limitBanner, {
+                  backgroundColor: colors.brand.danger + "15",
+                  borderColor: colors.brand.danger + "33",
+                }]}
+                activeOpacity={0.8}
+              >
+                <View style={styles.limitContent}>
+                  <Ionicons name="alert-circle" size={14} color={colors.brand.danger} />
+                  <Text style={[styles.limitText, { color: colors.brand.danger }]}>
+                    {t('premium.expired_banner')}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color={colors.brand.danger} />
+              </TouchableOpacity>
+            )}
 
             {/* Premium limit indicator */}
             {showLimit && (

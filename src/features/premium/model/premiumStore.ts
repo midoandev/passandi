@@ -25,6 +25,7 @@ type PurchaseStatus =
 
 type PremiumState = {
   subscriptionTier: SubscriptionTier;
+  subscriptionExpiresAt: number | null; // timestamp expired, null jika lifetime/tidak expire
   isLoading: boolean;
   lastChecked: number | null;
   purchaseStatus: PurchaseStatus;
@@ -37,6 +38,7 @@ type PremiumState = {
   activatePremium: (userId: string) => Promise<boolean>;
   resetPremium: () => void;
   isPremium: () => boolean;
+  isExpired: () => boolean;
 
   initIap: (productIds: string[]) => Promise<void>;
   buyPremium: (productId: string, userId: string) => Promise<void>;
@@ -48,6 +50,7 @@ type PremiumState = {
 
 export const usePremiumStore = create<PremiumState>((set, get) => ({
   subscriptionTier: 'free',
+  subscriptionExpiresAt: null,
   isLoading: false,
   lastChecked: null,
   purchaseStatus: 'idle',
@@ -74,8 +77,18 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
 
       if (error) throw error;
 
-      const tier: SubscriptionTier = data?.is_premium ? 'premium' : 'free';
-      set({ subscriptionTier: tier, lastChecked: Date.now(), isLoading: false });
+      if (data?.is_premium) {
+        const expiresAt = data?.expires_at ? new Date(data.expires_at).getTime() : null;
+        const expired = expiresAt && expiresAt < Date.now();
+        set({
+          subscriptionTier: expired ? 'expired' : 'premium',
+          subscriptionExpiresAt: expiresAt,
+          lastChecked: Date.now(),
+          isLoading: false,
+        });
+      } else {
+        set({ subscriptionTier: 'free', subscriptionExpiresAt: null, lastChecked: Date.now(), isLoading: false });
+      }
     } catch {
       set({ isLoading: false });
     }
@@ -114,6 +127,11 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   },
 
   isPremium: () => isPremium(get().subscriptionTier),
+
+  isExpired: () => {
+    const expiresAt = get().subscriptionExpiresAt;
+    return expiresAt !== null && expiresAt < Date.now();
+  },
 
   // ── IAP Actions ──
 
@@ -214,6 +232,10 @@ export function useSubscriptionTier(): SubscriptionTier {
 
 export function useIsPremium(): boolean {
   return usePremiumStore((s) => s.isPremium());
+}
+
+export function useIsExpired(): boolean {
+  return usePremiumStore((s) => s.isExpired());
 }
 
 export function useIsPremiumLoading(): boolean {

@@ -12,11 +12,16 @@ export function isPremium(tier: SubscriptionTier): boolean {
   return tier === 'premium';
 }
 
+export function isExpired(tier: SubscriptionTier): boolean {
+  return tier === 'expired';
+}
+
 /**
  * Get subscription tier from string (with fallback)
  */
 export function getSubscriptionTier(tier: string | null | undefined): SubscriptionTier {
   if (tier === 'premium') return 'premium';
+  if (tier === 'expired') return 'expired';
   return 'free';
 }
 
