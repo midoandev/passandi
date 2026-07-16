@@ -53,7 +53,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   };
 
   return (
-    <View style={[styles.barWrap, { paddingBottom: insets.bottom + 8 }]}>
+    <View style={[styles.barWrap, { paddingBottom: insets.bottom + 16 }]}>
       <View style={[styles.bar, {
         backgroundColor: tokens.surface,
         borderColor: tokens.border,

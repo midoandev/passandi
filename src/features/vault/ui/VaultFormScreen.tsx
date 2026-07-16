@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { router, useLocalSearchParams } from "expo-router";
@@ -73,6 +75,7 @@ export function VaultFormScreen() {
   });
 
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeSection, setActiveSection] = useState<"main" | "extra">("main");
 
   const { data: categories = [] } = useCategories();
@@ -356,12 +359,37 @@ export function VaultFormScreen() {
         value={form.holderName ?? ""}
         onChangeText={(v) => update("holderName", v)}
       />
-      <AppInput
-        label={t("common.expiry_date")}
-        placeholder={t("vault.field_expired_date_placeholder")}
-        value={form.expiredDate ?? ""}
-        onChangeText={(v) => update("expiredDate", v)}
-      />
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        style={[styles.dateBtn, {
+          backgroundColor: tokens.surface,
+          borderColor: tokens.border,
+        }]}
+      >
+        <Text style={[styles.dateLabel, { color: tokens.subtle }]}>
+          {t("common.expiry_date")}
+        </Text>
+        <Text style={[styles.dateValue, {
+          color: form.expiredDate ? tokens.text : tokens.subtle,
+        }]}>
+          {form.expiredDate || t("vault.field_expired_date_placeholder")}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={form.expiredDate ? new Date(form.expiredDate) : new Date()}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={(_e, date) => {
+            setShowDatePicker(Platform.OS === "ios");
+            if (date) {
+              const mm = String(date.getMonth() + 1).padStart(2, "0");
+              const yyyy = date.getFullYear();
+              update("expiredDate", `${mm}/${yyyy}`);
+            }
+          }}
+        />
+      )}
       <AppInput
         label={t("common.notes")}
         placeholder={t("vault.field_notes_placeholder")}
@@ -507,6 +535,13 @@ const styles = StyleSheet.create({
   favoriteLabel: { flex: 1, fontSize: 13 },
 
   fieldLabel: { fontSize: 11, letterSpacing: 0.5, marginBottom: 6 },
+  dateBtn: {
+    borderRadius: 14, borderWidth: 0.5,
+    paddingHorizontal: 14, paddingVertical: 14,
+    marginBottom: 12,
+  },
+  dateLabel: { fontSize: 11, letterSpacing: 0.5, marginBottom: 4 },
+  dateValue: { fontSize: 15 },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1.5,
