@@ -91,14 +91,14 @@ export function AboutScreen() {
             iconBg={colors.brand.blue + "22"}
             iconColor={colors.brand.blue}
             title={t("about.changelog")}
-            onPress={() => Linking.openURL("https://mido.github.io/passandi-web/#changelog")}
+            onPress={() => Linking.openURL("https://mido.github.io/passandi/#changelog")}
           />
           <SettingRow
             icon="cube-outline"
             iconBg={colors.brand.blue + "22"}
             iconColor={colors.brand.blue}
             title={t("about.open_source")}
-            onPress={() => Linking.openURL("https://mido.github.io/passandi-web/#licenses")}
+            onPress={() => Linking.openURL("https://mido.github.io/passandi/#licenses")}
           />
         </SettingGroup>
 
