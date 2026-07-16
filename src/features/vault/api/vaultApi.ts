@@ -94,13 +94,11 @@ export const getLocalVaultItems = async (
   const db = await getDb();
   const offset = (page - 1) * limit;
 
-  const conditions = ["user_id = ?"];
+  const conditions = ["user_id = ?", "is_deleted = 0"];
   const params: any[] = [userId];
 
   if (categoryId) {
     conditions.push("category_id = ?");
-    // Always show non-deleted items
-    conditions.push("is_deleted = 0");
     params.push(categoryId);
   }
   if (searchQuery) {
