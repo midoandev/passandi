@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +14,9 @@ import {
   useProducts,
 } from '../model/premiumStore';
 import { useAuthStore } from '@/features/auth/model/authStore';
-import { PREMIUM_PRODUCT_IDS } from '@/shared/config/subscription';
+import { PREMIUM_PRODUCT_IDS, PREMIUM_PRICING } from '@/shared/config/subscription';
 
+type PlanKey = 'monthly' | 'yearly';
 type FeatureItem = {
   icon: IoniconsName;
   titleKey: string;
@@ -34,6 +35,7 @@ const FEATURES: FeatureItem[] = [
 export function PaywallScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('yearly');
 
   const purchaseStatus = usePurchaseStatus();
   const purchaseError = usePurchaseError();
@@ -73,8 +75,9 @@ export function PaywallScreen() {
   }, [purchaseError]);
 
   const handleUpgrade = () => {
-    const productId = products[0]?.id ?? 'passandi_premium_lifetime';
-    buyPremium(productId, userId);
+    const sku = PREMIUM_PRICING[selectedPlan].sku;
+    const product = products.find((p) => p.id === sku);
+    buyPremium(product?.id ?? sku, userId);
   };
 
   const handleRestore = async () => {
@@ -116,18 +119,40 @@ export function PaywallScreen() {
           </Text>
         </View>
 
-        {/* Pricing */}
-        <View style={[styles.pricingCard, {
-          backgroundColor: tokens.surface,
-          borderColor: colors.brand.gold + "44",
-        }]}>
-          <Ionicons name="diamond" size={28} color={colors.brand.gold} />
-          <Text style={[styles.price, { color: tokens.text }]}>
-            {products[0]?.price ?? t('premium.price_idr')}
-          </Text>
-          <Text style={[styles.priceLabel, { color: tokens.subtle }]}>
-            {t('premium.one_time_purchase')}
-          </Text>
+        {/* Plan Picker */}
+        <View style={styles.plansWrap}>
+          {(['monthly', 'yearly'] as PlanKey[]).map((key) => {
+            const plan = PREMIUM_PRICING[key];
+            const isSelected = selectedPlan === key;
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => setSelectedPlan(key)}
+                style={[styles.planCard, {
+                  backgroundColor: isSelected ? colors.brand.blue + "15" : tokens.surface,
+                  borderColor: isSelected ? colors.brand.blue : tokens.border,
+                }]}
+                activeOpacity={0.7}
+              >
+                {key === 'yearly' && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>Hemat 33%</Text>
+                  </View>
+                )}
+                <Text style={[styles.planLabel, {
+                  color: isSelected ? colors.brand.blue : tokens.subtle,
+                }]}>
+                  {plan.label}
+                </Text>
+                <Text style={[styles.planPrice, { color: isSelected ? colors.brand.blue : tokens.text }]}>
+                  {key === 'monthly' ? '$0.99' : '$7.99'}
+                </Text>
+                <Text style={[styles.planPeriod, { color: tokens.subtle }]}>
+                  {key === 'monthly' ? t('premium.per_month') : t('premium.per_year')}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Features */}
@@ -181,7 +206,6 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: { paddingBottom: 40 },
 
-  // Already premium
   alreadyWrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: 32, gap: 12,
@@ -191,21 +215,26 @@ const styles = StyleSheet.create({
   backLink: { marginTop: 16 },
   backLinkText: { fontSize: 14, fontWeight: '500' },
 
-  // Header
   header: { padding: 24, paddingBottom: 8 },
   title: { fontSize: 28, fontWeight: '800', marginBottom: 6 },
   subtitle: { fontSize: 14, lineHeight: 20 },
 
-  // Pricing
-  pricingCard: {
-    marginHorizontal: 20, marginTop: 16,
-    borderRadius: 20, borderWidth: 1.5,
-    padding: 24, alignItems: 'center', gap: 8,
+  plansWrap: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, marginTop: 16 },
+  planCard: {
+    flex: 1, borderRadius: 16, borderWidth: 1.5,
+    padding: 16, alignItems: 'center', gap: 4,
+    position: 'relative',
   },
-  price: { fontSize: 34, fontWeight: '800' },
-  priceLabel: { fontSize: 13 },
+  badge: {
+    position: 'absolute', top: -10,
+    backgroundColor: '#10B981', paddingHorizontal: 10,
+    paddingVertical: 3, borderRadius: 10,
+  },
+  badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  planLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 },
+  planPrice: { fontSize: 24, fontWeight: '800' },
+  planPeriod: { fontSize: 12 },
 
-  // Features
   featuresWrap: { paddingHorizontal: 20, marginTop: 20, gap: 10 },
   featureRow: {
     flexDirection: 'row', gap: 14,
@@ -220,7 +249,6 @@ const styles = StyleSheet.create({
   featureTitle: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
   featureDesc: { fontSize: 12, lineHeight: 17 },
 
-  // CTA
   ctaWrap: { padding: 20, gap: 12 },
   restoreBtn: { paddingVertical: 12, alignItems: 'center' },
   restoreText: { fontSize: 14, fontWeight: '500' },

@@ -60,10 +60,18 @@ export const PREMIUM_FEATURES = {
  * Premium pricing configuration
  */
 export const PREMIUM_PRICING = {
-  oneTime: {
-    priceIDR: 49000,
-    priceUSD: 3.49,
-    sku: 'passandi_premium_lifetime',
+  monthly: {
+    priceIDR: 15000,
+    priceUSD: 0.99,
+    sku: 'passandi_pro_monthly',
+    label: 'PRO MONTHLY',
+  },
+  yearly: {
+    priceIDR: 120000,
+    priceUSD: 7.99,
+    sku: 'passandi_pro_yearly',
+    label: 'PRO YEARLY',
+    discount: 33, // % hemat dibanding monthly
   },
 } as const;
 
@@ -74,8 +82,8 @@ export const PREMIUM_PRICING = {
  */
 export const PREMIUM_PRODUCT_IDS = {
   production: {
-    ios: ['passandi_premium_lifetime'] as string[],
-    android: ['passandi_premium_lifetime'] as string[],
+    ios: ['passandi_pro_monthly', 'passandi_pro_yearly'] as string[],
+    android: ['passandi_pro_monthly', 'passandi_pro_yearly'] as string[],
   },
   test: {
     ios: [] as string[], // Use StoreKit Testing in Xcode

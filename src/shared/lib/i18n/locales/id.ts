@@ -383,6 +383,8 @@ export default {
     price_usd: "$3.49",
     lifetime_access: "Akses Seumur Hidup",
     one_time_purchase: "Beli Sekali, Pakai Selamanya",
+    per_month: "/bulan",
+    per_year: "/tahun",
 
     // Benefits
     benefit_unlimited: "Item vault tak terbatas",

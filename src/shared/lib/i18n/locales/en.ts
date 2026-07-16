@@ -382,6 +382,8 @@ export default {
     price_usd: "$3.49",
     lifetime_access: "Lifetime Access",
     one_time_purchase: "Pay Once, Use Forever",
+    per_month: "/month",
+    per_year: "/year",
 
     // Benefits
     benefit_unlimited: "Unlimited vault items",
