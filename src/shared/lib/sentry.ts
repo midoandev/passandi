@@ -9,7 +9,7 @@ export const initSentry = () => {
     dsn,
     tracesSampleRate: 0.2, // 20% of transactions for performance
     debug: false,
-    enabled: true, // Aktif sementara untuk test
+    enabled: !__DEV__,
   });
 };
 

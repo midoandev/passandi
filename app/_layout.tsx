@@ -126,7 +126,6 @@ export default function RootLayout() {
   useEffect(() => {
     initSentry();
     initAnalytics();
-    trackEvent("app_open");
 
     const boot = async () => {
       try {
