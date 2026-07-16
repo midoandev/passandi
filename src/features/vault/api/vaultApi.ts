@@ -27,12 +27,14 @@ const ITEM_FIELDS = `
   id, server_id, user_id, title, category_id, is_favorite,
   icon_type, icon_value, icon_color,
   username, email, password, pin, phone, url,
-  notes, holder_name, expired_date, custom_fields
+  notes, holder_name, expired_date, custom_fields,
+  created_at, updated_at
 `;
 
 const mapRow = (row: any): VaultItem => ({
   id: row.id,
-  serverId: row.server_id,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
   userId: row.user_id,
   title: row.title,
   categoryId: row.category_id,
@@ -52,7 +54,6 @@ const mapRow = (row: any): VaultItem => ({
   customFields: (() => {
     try { return JSON.parse(row.custom_fields || "[]"); } catch { return []; }
   })(),
-  updatedAt: row.updated_at,
 });
 
 // ── READ ───────────────────────────────────────────────────────

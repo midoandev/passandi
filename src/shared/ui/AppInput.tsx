@@ -36,7 +36,7 @@ export function AppInput({
         style={[
           styles.inputRow,
           {
-            backgroundColor: tokens.bg,
+            backgroundColor: tokens.surface,
             borderColor: tokens.border,
           },
         ]}

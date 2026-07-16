@@ -33,9 +33,9 @@ const darkTokens: ThemeTokens = {
 };
 
 const lightTokens: ThemeTokens = {
-  bg: "#F8FAFF",
+  bg: "#eef6ff",
   surface: "#FFFFFF",
-  border: "#E2EBF6",
+  border: "#a4a5d6",
   text: "#1E3A5F",
   textSecondary: "#64748B",
   muted: "#64748B",

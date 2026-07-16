@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   },
   dateLabel: { fontSize: 11, letterSpacing: 0.5, marginBottom: 4 },
   dateValue: { fontSize: 15 },
-  passRow: { flexDirection: "row", gap: 10, alignItems: "flex-end", marginBottom: 12 },
+  passRow: { flexDirection: "row", gap: 10, alignItems: "center", marginBottom: 12 },
   passInput: { flex: 1 },
   genBtn: {
     width: 44, height: 44, borderRadius: 12,

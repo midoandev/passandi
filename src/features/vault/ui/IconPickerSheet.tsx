@@ -71,7 +71,9 @@ export function IconPickerSheet({
   );
 
   const renderTabs = () => (
-    <View style={[styles.tabs, { borderColor: tokens.border }]}>
+    <View style={[styles.tabs, {
+      backgroundColor: tokens.border, borderColor: tokens.bg
+    }]}>
       {TABS.map((tab) => (
         <TouchableOpacity
           key={tab.key}
@@ -226,7 +228,7 @@ export function IconPickerSheet({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
     >
       <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
         <AppBar
@@ -277,7 +279,6 @@ const styles = StyleSheet.create({
   colorBlock: { width: 32, height: 32, borderRadius: 8 },
   tabs: {
     flexDirection: "row",
-    backgroundColor: "#162235",
     borderRadius: 12,
     borderWidth: 0.5,
     padding: 4,
