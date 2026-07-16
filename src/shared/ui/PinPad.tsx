@@ -4,7 +4,6 @@ import {
   StyleSheet, Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import type { IoniconsName } from "@/shared/lib/iconTypes";
 import { useTheme } from "@/shared/config/ThemeContext";
 import { colors } from "@/shared/config/ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -16,7 +15,7 @@ type PinPadProps = {
   icon?: string;
   iconType?: "emoji" | "ionicon";
   title: string;
-  /** @deprecated Only emoji-type icons are supported. Ionicon type will be removed in favor of emoji. */
+  subtitle?: string;
   subtitle?: string;
   pin: string;
   onPinChange: (pin: string) => void;

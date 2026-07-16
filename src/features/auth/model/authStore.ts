@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { Session, User } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { supabase } from "@/shared/lib/supabase";
 import { useSecurityStore } from "./securityStore";
 import { AppError, createAppError } from "../../../shared/utils/error";
@@ -33,15 +35,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   initialize: async () => {
-    try {
-      const { GoogleSignin } = await import("@react-native-google-signin/google-signin");
-      GoogleSignin.configure({
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-      });
-    } catch {
-      // Native module not available — Google Sign-In disabled
-    }
-
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -81,41 +74,56 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signInGoogle: async () => {
     set({ loading: true });
+    const redirectTo = Linking.createURL("");
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+    if (error) {
+      set({ loading: false });
+      return { success: false, error: createAppError(error.message) };
+    }
+    if (!data?.url) {
+      set({ loading: false });
+      return { success: false, error: createAppError("google_signin_no_url") };
+    }
     try {
-      const { GoogleSignin, statusCodes } = await import("@react-native-google-signin/google-signin");
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const signInResult = await GoogleSignin.signIn();
-      if (signInResult.type === "cancelled") {
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type !== "success") {
         set({ loading: false });
         return { success: false, error: createAppError("google_signin_cancelled") };
       }
-      const idToken = signInResult.data.idToken;
-      if (!idToken) {
-        set({ loading: false });
-        return { success: false, error: createAppError("google_signin_no_token") };
-      }
-      const { error } = await supabase.auth.signInWithIdToken({
-        provider: "google",
-        token: idToken,
-      });
-      if (error) {
-        set({ loading: false });
-        return { success: false, error: createAppError(error.message) };
-      }
-      set({ loading: false });
-      return { success: true, data: undefined };
-    } catch (e: any) {
-      set({ loading: false });
-      try {
-        const { statusCodes } = await import("@react-native-google-signin/google-signin");
-        if (e?.code === statusCodes.SIGN_IN_CANCELLED) {
-          return { success: false, error: createAppError("google_signin_cancelled") };
+      // Parse URL — bisa ?code=xxx atau #access_token=xxx
+      const hashIndex = result.url.indexOf("#");
+      const queryIndex = result.url.indexOf("?");
+      if (hashIndex >= 0) {
+        const hash = result.url.slice(hashIndex + 1);
+        const params = Object.fromEntries(new URLSearchParams(hash));
+        if (params.access_token) {
+          await supabase.auth.setSession({
+            access_token: params.access_token,
+            refresh_token: params.refresh_token ?? "",
+          });
+          set({ loading: false });
+          return { success: true, data: undefined };
         }
-      } catch {
-        // ignore
       }
-      return { success: false, error: createAppError(e?.message ?? "google_signin_failed") };
+      if (queryIndex >= 0) {
+        const qs = result.url.slice(queryIndex);
+        const params = Object.fromEntries(new URLSearchParams(qs));
+        if (params.code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code);
+          if (!exchangeError) {
+            set({ loading: false });
+            return { success: true, data: undefined };
+          }
+        }
+      }
+    } catch {
+      // ignore
     }
+    set({ loading: false });
+    return { success: false, error: createAppError("google_signin_failed") };
   },
 
   // Kondisi 5 & 6 — Logout biasa, PIN tidak dihapus

@@ -68,7 +68,7 @@ export function UnlockScreen() {
     <SafeAreaView style={[styles.flex, { backgroundColor: tokens.bg }]}>
       <View style={{ flex: 1, paddingVertical: 24 }}>
       <PinPad
-        icon="shield" iconType="ionicon"
+        icon="shield-outline" iconType="ionicon"
         title={t("unlock.title")}
         subtitle={t("unlock.greeting", { name: firstName })}
         pin={pin}

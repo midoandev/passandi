@@ -129,7 +129,7 @@ export function CategoryScreen() {
       <ScrollView
         contentContainerStyle={[styles.scroll, {
           paddingBottom: insets.bottom + 120,
-          paddingTop: 16,
+          paddingTop: insets.top + 16,
         }]}
         showsVerticalScrollIndicator={false}
       >

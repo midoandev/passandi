@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/shared/config/ThemeContext";
@@ -55,7 +56,7 @@ export function AppBar({
               },
             ]}
           >
-            <Text style={[styles.backIcon, { color: tokens.text }]}>←</Text>
+            <Ionicons name="arrow-back" size={18} color={tokens.text} />
           </TouchableOpacity>
         )}
       </View>

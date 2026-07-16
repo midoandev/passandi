@@ -47,13 +47,7 @@
         }
       ],
       "expo-web-browser",
-      "expo-sqlite",
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.912729545473-mu1nr4q2t4vl6rvv103ihtlndk9k05ds"
-        }
-      ]
+      "expo-sqlite"
     ],
     "extra": {
       "router": {},
