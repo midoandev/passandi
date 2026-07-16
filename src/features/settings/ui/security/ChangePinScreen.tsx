@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -20,10 +20,11 @@ export function ChangePinScreen() {
   const [pin, setPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [isError, setIsError] = useState(false);
+  const oldPin = useRef("");
 
   const user = useAuthStore((s) => s.user);
   const verifyPin = useSecurityStore((s) => s.verifyPin);
-  const setupPin = useSecurityStore((s) => s.setupPin);
+  const changePin = useSecurityStore((s) => s.changePin);
 
   useEffect(() => {
     if (pin.length !== 6) return;
@@ -34,6 +35,7 @@ export function ChangePinScreen() {
       if (step === "verify") {
         const valid = await verifyPin(user.id, pin);
         if (valid) {
+          oldPin.current = pin;
           setPin("");
           setStep("new");
         } else {
@@ -53,7 +55,7 @@ export function ChangePinScreen() {
         if (pin !== newPin) {
           setIsError(true);
         } else {
-          await setupPin(user.id, newPin);
+          await changePin(user.id, oldPin.current, newPin);
           Alert.alert(t("common.success"), t("change_pin.success"), [
             { text: t("common.ok"), onPress: () => router.back() },
           ]);

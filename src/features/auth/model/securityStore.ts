@@ -1,11 +1,18 @@
 import { create } from "zustand";
 import * as ExpoCrypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
+import { setupVaultKey, changeVaultKey, deleteVaultKeys } from "@/shared/lib/encryption";
 
 import { AppError, createAppError } from "../../../shared/utils/error";
 
 const getPinHashKey = (userId: string) => `passandi_pin_hash_${userId}`;
 const getHasPinKey = (userId: string) => `passandi_has_pin_${userId}`;
+
+let _cachedPin: string | null = null;
+
+/** Temporary PIN cache for session — allows vaultApi encrypt/decrypt */
+export const getSessionPin = (): string | null => _cachedPin;
+export const setSessionPin = (pin: string | null) => { _cachedPin = pin; };
 
 const hashPin = async (pin: string): Promise<string> => {
   const salt = process.env.EXPO_PUBLIC_PIN_SALT ?? "dev_fallback_salt";
@@ -26,6 +33,7 @@ type SecurityState = {
   verifyPin: (userId: string, pin: string) => Promise<boolean>;
   clearPin: (userId: string) => Promise<void>;
   clearError: () => void;
+  changePin: (userId: string, oldPin: string, newPin: string) => Promise<void>;
 };
 
 export const useSecurityStore = create<SecurityState>((set) => ({
@@ -52,6 +60,7 @@ export const useSecurityStore = create<SecurityState>((set) => ({
       const hashed = await hashPin(pin);
       await SecureStore.setItemAsync(getPinHashKey(userId), hashed);
       await SecureStore.setItemAsync(getHasPinKey(userId), "true");
+      await setupVaultKey(pin);
       set({ hasPin: true });
     } catch {
       set({ error: createAppError("Gagal menyimpan PIN.") });
@@ -64,19 +73,37 @@ export const useSecurityStore = create<SecurityState>((set) => ({
       const stored = await SecureStore.getItemAsync(getPinHashKey(userId));
       if (!stored) return false;
       const hashed = await hashPin(pin);
-      return hashed === stored;
+      const valid = hashed === stored;
+      if (valid) setSessionPin(pin);
+      return valid;
     } catch {
       return false;
     }
+  },
+
+  changePin: async (userId, oldPin, newPin) => {
+    set({ loading: true, error: null });
+    try {
+      const hashed = await hashPin(newPin);
+      await SecureStore.setItemAsync(getPinHashKey(userId), hashed);
+      await SecureStore.setItemAsync(getHasPinKey(userId), "true");
+      await changeVaultKey(oldPin, newPin);
+      set({ hasPin: true });
+    } catch {
+      set({ error: createAppError("Gagal mengubah PIN.") });
+    }
+    set({ loading: false });
   },
 
   clearPin: async (userId) => {
     try {
       await SecureStore.deleteItemAsync(getPinHashKey(userId));
       await SecureStore.deleteItemAsync(getHasPinKey(userId));
+      await deleteVaultKeys();
     } catch {
       // best-effort — item mungkin sudah tidak ada
     }
     set({ hasPin: false });
+    setSessionPin(null);
   },
 }));

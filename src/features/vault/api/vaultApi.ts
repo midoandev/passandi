@@ -12,20 +12,22 @@ const ENCRYPTED_FIELDS = [
   "notes", "holderName", "expiredDate", "customFields",
 ] as const;
 
+import { getSessionPin } from "@/features/auth/model/securityStore";
+
 const decryptItem = async (item: VaultItem): Promise<VaultItem> => {
+  const pin = getSessionPin();
   const results = await Promise.all(
     ENCRYPTED_FIELDS.map((f) => {
       const val = item[f];
       if (!val || (typeof val === "string" && !val)) return undefined;
       if (f === "customFields" && typeof val === "string") {
-        return decrypt(val, item.userId).then((dec) => {
+        return decrypt(val, pin ?? undefined).then((dec) => {
           try { return JSON.parse(dec); } catch { return []; }
         });
       }
       if (typeof val === "string") {
-        return decrypt(val, item.userId);
+        return decrypt(val, pin ?? undefined);
       }
-      // customFields might already be parsed array
       return val;
     })
   );
@@ -34,11 +36,12 @@ const decryptItem = async (item: VaultItem): Promise<VaultItem> => {
   return { ...item, ...decrypted };
 };
 
-const encVal = async (val: any, userId: string): Promise<string | null> => {
+const encVal = async (val: any): Promise<string | null> => {
   if (val === undefined || val === null) return null;
   const str = typeof val === "string" ? val : JSON.stringify(val);
   if (!str) return null;
-  return encrypt(str, userId);
+  const pin = getSessionPin();
+  return encrypt(str, pin ?? undefined);
 };
 
 const decryptItems = async (items: VaultItem[]): Promise<VaultItem[]> =>
@@ -161,16 +164,16 @@ export const createLocalVaultItem = async (
 
   const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
     encNotes, encHolder, encExpired, encCustom] = await Promise.all([
-    encVal(form.username, userId),
-    encVal(form.email, userId),
-    encVal(form.password, userId),
-    encVal(form.pin, userId),
-    encVal(form.phone, userId),
-    encVal(form.url, userId),
-    encVal(form.notes, userId),
-    encVal(form.holderName, userId),
-    encVal(form.expiredDate, userId),
-    encVal(form.customFields, userId),
+    encVal(form.username),
+    encVal(form.email),
+    encVal(form.password),
+    encVal(form.pin),
+    encVal(form.phone),
+    encVal(form.url),
+    encVal(form.notes),
+    encVal(form.holderName),
+    encVal(form.expiredDate),
+    encVal(form.customFields),
   ]);
 
   await db.runAsync(
@@ -200,23 +203,22 @@ export const createLocalVaultItem = async (
 export const updateLocalVaultItem = async (
   id: string,
   form: VaultItemForm,
-  userId?: string,
 ): Promise<void> => {
   const db = await getDb();
   const now = Date.now();
 
   const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
     encNotes, encHolder, encExpired, encCustom] = await Promise.all([
-    encVal(form.username, userId ?? ""),
-    encVal(form.email, userId ?? ""),
-    encVal(form.password, userId ?? ""),
-    encVal(form.pin, userId ?? ""),
-    encVal(form.phone, userId ?? ""),
-    encVal(form.url, userId ?? ""),
-    encVal(form.notes, userId ?? ""),
-    encVal(form.holderName, userId ?? ""),
-    encVal(form.expiredDate, userId ?? ""),
-    encVal(form.customFields, userId ?? ""),
+    encVal(form.username),
+    encVal(form.email),
+    encVal(form.password),
+    encVal(form.pin),
+    encVal(form.phone),
+    encVal(form.url),
+    encVal(form.notes),
+    encVal(form.holderName),
+    encVal(form.expiredDate),
+    encVal(form.customFields),
   ]);
 
   await db.runAsync(
@@ -321,24 +323,24 @@ export const upsertItemFromServer = async (
 
   // Server data sudah terenkripsi → decrypt dulu untuk dapat plaintext
   const [rawPassword, rawPin, rawNotes] = await Promise.all([
-    serverItem.password ? decrypt(serverItem.password, userId) : Promise.resolve(null),
-    serverItem.pin ? decrypt(serverItem.pin, userId) : Promise.resolve(null),
-    serverItem.notes ? decrypt(serverItem.notes, userId) : Promise.resolve(null),
+    serverItem.password ? decrypt(serverItem.password) : Promise.resolve(null),
+    serverItem.pin ? decrypt(serverItem.pin) : Promise.resolve(null),
+    serverItem.notes ? decrypt(serverItem.notes) : Promise.resolve(null),
   ]);
 
   // Enkripsi semua field untuk local storage
   const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
     encNotes, encHolder, encExpired, encCustom] = await Promise.all([
-    encVal(serverItem.username, userId),
-    encVal(serverItem.email, userId),
-    rawPassword ? encrypt(rawPassword, userId) : Promise.resolve(null),
-    rawPin ? encrypt(rawPin, userId) : Promise.resolve(null),
-    encVal(serverItem.phone, userId),
-    encVal(serverItem.url, userId),
-    rawNotes ? encrypt(rawNotes, userId) : Promise.resolve(null),
-    encVal(serverItem.holder_name, userId),
-    encVal(serverItem.expired_date, userId),
-    encVal(serverItem.custom_fields, userId),
+    encVal(serverItem.username),
+    encVal(serverItem.email),
+    rawPassword ? encrypt(rawPassword) : Promise.resolve(null),
+    rawPin ? encrypt(rawPin) : Promise.resolve(null),
+    encVal(serverItem.phone),
+    encVal(serverItem.url),
+    rawNotes ? encrypt(rawNotes) : Promise.resolve(null),
+    encVal(serverItem.holder_name),
+    encVal(serverItem.expired_date),
+    encVal(serverItem.custom_fields),
   ]);
 
   const existing = await db.getFirstAsync<any>(
