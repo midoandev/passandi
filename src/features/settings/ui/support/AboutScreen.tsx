@@ -1,6 +1,6 @@
 import {
   View, Text, ScrollView,
-  TouchableOpacity, StyleSheet, Linking, Alert,
+  TouchableOpacity, StyleSheet, Linking, Alert, Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -30,12 +30,10 @@ export function AboutScreen() {
       >
         {/* Hero */}
         <View style={styles.hero}>
-          <View style={[styles.appIcon, {
-            backgroundColor: colors.brand.navy,
-            borderColor: colors.brand.blue + "44",
-          }]}>
-            <Text style={styles.appIconText}>🔐</Text>
-          </View>
+          <Image
+            source={require("@/assets/images/icon.png")}
+            style={styles.appIcon}
+          />
           <Text style={[styles.appName, { color: tokens.text }]}>
             {t("common.app_name")}
           </Text>
@@ -157,10 +155,8 @@ const styles = StyleSheet.create({
   hero: { alignItems: "center", marginBottom: 24 },
   appIcon: {
     width: 88, height: 88, borderRadius: 24,
-    borderWidth: 1.5, alignItems: "center",
-    justifyContent: "center", marginBottom: 14,
+    marginBottom: 14,
   },
-  appIconText: { fontSize: 40 },
   appName: { fontSize: 26, fontWeight: "600", marginBottom: 6 },
   tagline: { fontSize: 13, marginBottom: 12 },
   versionBadge: {
