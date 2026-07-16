@@ -21,21 +21,21 @@ export function SupportScreen() {
           iconColor="#22D3EE"
           title={t("settings.contact_us")}
           subtitle={t("settings.contact_us_sub")}
-          onPress={() => Linking.openURL("mailto:support@passandi.app")}
+          onPress={() => Linking.openURL("mailto:andev.mido@gmail.com")}
         />
         <SettingRow
           icon="document-text-outline"
           iconBg="#06B6D422"
           iconColor="#22D3EE"
           title={t("settings.terms")}
-          onPress={() => Linking.openURL("https://mido.github.io/passandi/#terms")}
+          onPress={() => Linking.openURL("https://midoandev.github.io/passandi/#terms")}
         />
         <SettingRow
           icon="lock-closed-outline"
           iconBg="#06B6D422"
           iconColor="#22D3EE"
           title={t("settings.privacy")}
-          onPress={() => Linking.openURL("https://mido.github.io/passandi/#privacy")}
+          onPress={() => Linking.openURL("https://midoandev.github.io/passandi/#privacy")}
         />
         <SettingRow
           icon="information-circle-outline"

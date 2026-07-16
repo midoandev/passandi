@@ -91,7 +91,7 @@ export function AboutScreen() {
             iconBg={colors.brand.blue + "22"}
             iconColor={colors.brand.blue}
             title={t("about.changelog")}
-            onPress={() => Linking.openURL("https://mido.github.io/passandi/#changelog")}
+            onPress={() => Linking.openURL("https://midoandev.github.io/passandi/#changelog")}
           />
           <SettingRow
             icon="cube-outline"
