@@ -20,7 +20,11 @@
         "android.permission.INTERNET"
       ],
       "predictiveBackGestureEnabled": false,
-      "package": "id.mido.passandi"
+      "package": "id.mido.passandi",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png"
+      }
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
