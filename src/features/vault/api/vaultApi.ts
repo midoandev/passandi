@@ -7,6 +7,22 @@ const generateId = (): string => Crypto.randomUUID();
 
 // ── Query Helpers ──────────────────────────────────────────────
 
+const SENSITIVE_FIELDS = ["password", "pin", "notes"] as const;
+
+const decryptItem = async (item: VaultItem): Promise<VaultItem> => {
+  const [password, pin, notes] = await Promise.all([
+    item.password ? decrypt(item.password, item.userId) : undefined,
+    item.pin ? decrypt(item.pin, item.userId) : undefined,
+    item.notes ? decrypt(item.notes, item.userId) : undefined,
+  ]);
+  return { ...item, password, pin, notes };
+};
+
+const decryptItems = async (items: VaultItem[]): Promise<VaultItem[]> =>
+  Promise.all(items.map(decryptItem));
+
+// ── Query Helpers ──────────────────────────────────────────────
+
 const ITEM_FIELDS = `
   id, server_id, user_id, title, category_id, is_favorite,
   icon_type, icon_value, icon_color,
@@ -80,7 +96,8 @@ export const getLocalVaultItems = async (
     [...params, limit, offset]
   );
 
-  return { items: rows.map(mapRow), total: count };
+  const items = await decryptItems(rows.map(mapRow));
+  return { items, total: count };
 };
 
 export const getAllLocalItems = async (
@@ -93,7 +110,7 @@ export const getAllLocalItems = async (
      ORDER BY title ASC`,
     [userId]
   );
-  return rows.map(mapRow);
+  return decryptItems(rows.map(mapRow));
 };
 
 export const getVaultItemById = async (
@@ -104,7 +121,8 @@ export const getVaultItemById = async (
     `SELECT ${ITEM_FIELDS} FROM vault_items WHERE id = ?`,
     [id]
   );
-  return row ? mapRow(row) : null;
+  if (!row) return null;
+  return decryptItem(mapRow(row));
 };
 
 // ── CREATE ─────────────────────────────────────────────────────
@@ -116,6 +134,12 @@ export const createLocalVaultItem = async (
   const db = await getDb();
   const id = generateId();
   const now = Date.now();
+
+  const [encPassword, encPin, encNotes] = await Promise.all([
+    form.password ? encrypt(form.password, userId) : Promise.resolve(null),
+    form.pin ? encrypt(form.pin, userId) : Promise.resolve(null),
+    form.notes ? encrypt(form.notes, userId) : Promise.resolve(null),
+  ]);
 
   await db.runAsync(
     `INSERT INTO vault_items (
@@ -130,9 +154,9 @@ export const createLocalVaultItem = async (
       form.title, form.categoryId, 0,
       form.iconType, form.iconValue, form.iconColor,
       form.username ?? null, form.email ?? null,
-      form.password ?? null, form.pin ?? null,
+      encPassword, encPin,
       form.phone ?? null, form.url ?? null,
-      form.notes ?? null, form.holderName ?? null,
+      encNotes, form.holderName ?? null,
       form.expiredDate ?? null,
       JSON.stringify(form.customFields ?? []),
       now, now,
@@ -147,9 +171,17 @@ export const createLocalVaultItem = async (
 export const updateLocalVaultItem = async (
   id: string,
   form: VaultItemForm,
+  userId?: string,
 ): Promise<void> => {
   const db = await getDb();
   const now = Date.now();
+
+  // Encrypt if userId provided (caller must pass it for write operations)
+  const [encPassword, encPin, encNotes] = await Promise.all([
+    form.password && userId ? encrypt(form.password, userId) : Promise.resolve(form.password ?? null),
+    form.pin && userId ? encrypt(form.pin, userId) : Promise.resolve(form.pin ?? null),
+    form.notes && userId ? encrypt(form.notes, userId) : Promise.resolve(form.notes ?? null),
+  ]);
 
   await db.runAsync(
     `UPDATE vault_items SET
@@ -165,9 +197,9 @@ export const updateLocalVaultItem = async (
       form.title, form.categoryId,
       form.iconType, form.iconValue, form.iconColor,
       form.username ?? null, form.email ?? null,
-      form.password ?? null, form.pin ?? null,
+      encPassword, encPin,
       form.phone ?? null, form.url ?? null,
-      form.notes ?? null, form.holderName ?? null,
+      encNotes, form.holderName ?? null,
       form.expiredDate ?? null,
       JSON.stringify(form.customFields ?? []),
       now, id,
@@ -255,10 +287,19 @@ export const upsertItemFromServer = async (
 ): Promise<void> => {
   const db = await getDb();
 
-  const password = serverItem.password
-    ? await decrypt(serverItem.password, userId) : null;
-  const pin = serverItem.pin
-    ? await decrypt(serverItem.pin, userId) : null;
+  // Server data sudah terenkripsi → decrypt dulu
+  const [rawPassword, rawPin, rawNotes] = await Promise.all([
+    serverItem.password ? decrypt(serverItem.password, userId) : Promise.resolve(null),
+    serverItem.pin ? decrypt(serverItem.pin, userId) : Promise.resolve(null),
+    serverItem.notes ? decrypt(serverItem.notes, userId) : Promise.resolve(null),
+  ]);
+
+  // Re-encrypt untuk local storage
+  const [encPassword, encPin, encNotes] = await Promise.all([
+    rawPassword ? encrypt(rawPassword, userId) : Promise.resolve(null),
+    rawPin ? encrypt(rawPin, userId) : Promise.resolve(null),
+    rawNotes ? encrypt(rawNotes, userId) : Promise.resolve(null),
+  ]);
 
   const existing = await db.getFirstAsync<any>(
     "SELECT * FROM vault_items WHERE server_id = ?",
@@ -278,8 +319,8 @@ export const upsertItemFromServer = async (
         serverItem.title, serverItem.category_id,
         serverItem.is_favorite ? 1 : 0,
         serverItem.username ?? null, serverItem.email ?? null,
-        password, pin, serverItem.phone ?? null,
-        serverItem.url ?? null, serverItem.notes ?? null,
+        encPassword, encPin, serverItem.phone ?? null,
+        serverItem.url ?? null, encNotes,
         serverItem.holder_name ?? null,
         serverItem.expired_date ?? null,
         JSON.stringify(serverItem.custom_fields ?? []),
@@ -306,8 +347,8 @@ export const upsertItemFromServer = async (
         serverItem.icon_value ?? "🔐",
         serverItem.icon_color ?? "#2563EB",
         serverItem.username ?? null, serverItem.email ?? null,
-        password, pin, serverItem.phone ?? null,
-        serverItem.url ?? null, serverItem.notes ?? null,
+        encPassword, encPin, serverItem.phone ?? null,
+        serverItem.url ?? null, encNotes,
         serverItem.holder_name ?? null,
         serverItem.expired_date ?? null,
         JSON.stringify(serverItem.custom_fields ?? []),

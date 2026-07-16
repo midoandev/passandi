@@ -108,7 +108,7 @@ function SyncProvider() {
 
 function AppStatusBar() {
   const { mode } = useTheme();
-  return <StatusBar style={"inverted"} />;
+  return <StatusBar style={mode === "dark" ? "light" : "dark"} />;
 }
 
 const queryClient = new QueryClient();
