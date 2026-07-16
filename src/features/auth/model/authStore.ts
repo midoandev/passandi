@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { Session, User } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
-import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { supabase } from "@/shared/lib/supabase";
 import { useSecurityStore } from "./securityStore";
 import { AppError, createAppError } from "../../../shared/utils/error";
@@ -34,9 +33,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   initialize: async () => {
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    });
+    try {
+      const { GoogleSignin } = await import("@react-native-google-signin/google-signin");
+      GoogleSignin.configure({
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      });
+    } catch {
+      // Native module not available — Google Sign-In disabled
+    }
 
     const {
       data: { session },
@@ -78,6 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signInGoogle: async () => {
     set({ loading: true });
     try {
+      const { GoogleSignin, statusCodes } = await import("@react-native-google-signin/google-signin");
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const signInResult = await GoogleSignin.signIn();
       if (signInResult.type === "cancelled") {
@@ -101,8 +106,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return { success: true, data: undefined };
     } catch (e: any) {
       set({ loading: false });
-      if (e?.code === statusCodes.SIGN_IN_CANCELLED) {
-        return { success: false, error: createAppError("google_signin_cancelled") };
+      try {
+        const { statusCodes } = await import("@react-native-google-signin/google-signin");
+        if (e?.code === statusCodes.SIGN_IN_CANCELLED) {
+          return { success: false, error: createAppError("google_signin_cancelled") };
+        }
+      } catch {
+        // ignore
       }
       return { success: false, error: createAppError(e?.message ?? "google_signin_failed") };
     }
