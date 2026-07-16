@@ -2,6 +2,7 @@ import "react-native-gesture-handler";
 import "@/shared/lib/i18n";
 import { useEffect, useRef } from "react";
 import { initSentry, setUser, clearUser, logError } from "@/shared/lib/sentry";
+import { initAnalytics, identifyUser, resetAnalytics, trackEvent } from "@/shared/lib/analytics";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack, router, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -44,11 +45,13 @@ function AuthGate() {
       try {
         if (!session || !user) {
           clearUser();
+          resetAnalytics();
           if (!inAuthGroup) router.replace("/(auth)/login");
           return;
         }
 
         setUser(user.id, user.email);
+        identifyUser(user.id, { email: user.email });
         const hasPin = await checkHasPin(user.id);
 
         if (!hasPin) {
@@ -122,6 +125,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     initSentry();
+    initAnalytics();
+    trackEvent("app_open");
+
     const boot = async () => {
       try {
         await getDb();        // 1. init SQLite
