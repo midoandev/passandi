@@ -24,7 +24,6 @@ import { VaultItemCard } from "./VaultItemCard";
 import type { VaultCategory, VaultItem } from "@/entities/vault";
 import { router } from "expo-router";
 import { SyncIndicator, FloatingButton, SkeletonList } from "@/shared/ui";
-import { useSyncStore } from "@/shared/lib/sync/syncStore";
 import { useIsPremium, useIsExpired } from "@/features/premium";
 import { useSubscriptionTier } from "@/features/premium/model/premiumStore";
 import { SUBSCRIPTION_LIMITS } from "@/shared/config/subscription";
@@ -41,7 +40,6 @@ export function VaultScreen() {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
 
-  const startSync = useSyncStore((s) => s.startSync);
   const userId = useAuthStore((s) => s.user?.id ?? "");
 
   const searchQuery = useVaultUIStore((s) => s.searchQuery);
@@ -228,17 +226,6 @@ export function VaultScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 {/* Sync indicator */}
                 <SyncIndicator />
-
-                {/* Manual sync button */}
-                <TouchableOpacity
-                  onPress={() => startSync(userId)}
-                  style={[styles.iconBtn, {
-                    backgroundColor: tokens.surface,
-                    borderColor: tokens.border,
-                  }]}
-                >
-                  <Ionicons name="sync-outline" size={18} color={tokens.muted} />
-                </TouchableOpacity>
 
                 {/* Search button */}
                 <TouchableOpacity
