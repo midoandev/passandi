@@ -184,7 +184,9 @@ export function VaultScreen() {
   };
 
   return (
-    <View style={[styles.flex, { backgroundColor: tokens.bg }]}>
+    <View style={[styles.flex, {
+      backgroundColor: tokens.bg, paddingTop: 16,
+    }]}>
       <FloatingButton onPress={handleFAB} />
       <FlatList
         data={visibleItems}

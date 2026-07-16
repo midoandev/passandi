@@ -177,27 +177,6 @@ export function SettingsScreen() {
           />
         </SettingGroup>
 
-        {/* Premium Upgrade Section */}
-        {!isPremium && (
-          <TouchableOpacity
-            style={[styles.premiumCard, {
-              backgroundColor: colors.brand.gold + "11",
-              borderColor: colors.brand.gold + "44",
-            }]}
-            onPress={() => router.push("/(premium)/paywall")}
-            activeOpacity={0.8}
-          >
-            <View style={styles.premiumContent}>
-              <Text style={styles.premiumIcon}>💎</Text>
-              <View style={styles.premiumText}>
-                <Text style={styles.premiumTitle}>{t('premium.upgrade_to_premium')}</Text>
-                <Text style={styles.premiumDesc}>{t('premium.subtitle')}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.brand.gold} />
-          </TouchableOpacity>
-        )}
-
         {__DEV__ && (
 
           <SettingGroup style={styles.menuGroup}>
@@ -254,24 +233,5 @@ const styles = StyleSheet.create({
   },
   planText: { fontSize: 11, fontWeight: "500" },
   menuGroup: { marginBottom: 20 },
-  premiumCard: {
-    flexDirection: "row", alignItems: "center",
-    borderRadius: 16, padding: 16,
-    borderWidth: 1, marginBottom: 20,
-  },
-  premiumContent: {
-    flex: 1, flexDirection: "row",
-    alignItems: "center",
-  },
-  premiumIcon: { fontSize: 28, marginRight: 14 },
-  premiumText: { flex: 1 },
-  premiumTitle: {
-    fontSize: 15, fontWeight: "700",
-    color: "#92400E",
-  },
-  premiumDesc: {
-    fontSize: 12, color: "#A16207",
-    marginTop: 2,
-  },
   version: { fontSize: 11, textAlign: "center", marginTop: 8 },
 });
