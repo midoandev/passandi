@@ -7,15 +7,38 @@ const generateId = (): string => Crypto.randomUUID();
 
 // ── Query Helpers ──────────────────────────────────────────────
 
-const SENSITIVE_FIELDS = ["password", "pin", "notes"] as const;
+const ENCRYPTED_FIELDS = [
+  "username", "email", "password", "pin", "phone", "url",
+  "notes", "holderName", "expiredDate", "customFields",
+] as const;
 
 const decryptItem = async (item: VaultItem): Promise<VaultItem> => {
-  const [password, pin, notes] = await Promise.all([
-    item.password ? decrypt(item.password, item.userId) : undefined,
-    item.pin ? decrypt(item.pin, item.userId) : undefined,
-    item.notes ? decrypt(item.notes, item.userId) : undefined,
-  ]);
-  return { ...item, password, pin, notes };
+  const results = await Promise.all(
+    ENCRYPTED_FIELDS.map((f) => {
+      const val = item[f];
+      if (!val || (typeof val === "string" && !val)) return undefined;
+      if (f === "customFields" && typeof val === "string") {
+        return decrypt(val, item.userId).then((dec) => {
+          try { return JSON.parse(dec); } catch { return []; }
+        });
+      }
+      if (typeof val === "string") {
+        return decrypt(val, item.userId);
+      }
+      // customFields might already be parsed array
+      return val;
+    })
+  );
+  const decrypted = {} as any;
+  ENCRYPTED_FIELDS.forEach((f, i) => { decrypted[f] = results[i]; });
+  return { ...item, ...decrypted };
+};
+
+const encVal = async (val: any, userId: string): Promise<string | null> => {
+  if (val === undefined || val === null) return null;
+  const str = typeof val === "string" ? val : JSON.stringify(val);
+  if (!str) return null;
+  return encrypt(str, userId);
 };
 
 const decryptItems = async (items: VaultItem[]): Promise<VaultItem[]> =>
@@ -136,10 +159,18 @@ export const createLocalVaultItem = async (
   const id = generateId();
   const now = Date.now();
 
-  const [encPassword, encPin, encNotes] = await Promise.all([
-    form.password ? encrypt(form.password, userId) : Promise.resolve(null),
-    form.pin ? encrypt(form.pin, userId) : Promise.resolve(null),
-    form.notes ? encrypt(form.notes, userId) : Promise.resolve(null),
+  const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
+    encNotes, encHolder, encExpired, encCustom] = await Promise.all([
+    encVal(form.username, userId),
+    encVal(form.email, userId),
+    encVal(form.password, userId),
+    encVal(form.pin, userId),
+    encVal(form.phone, userId),
+    encVal(form.url, userId),
+    encVal(form.notes, userId),
+    encVal(form.holderName, userId),
+    encVal(form.expiredDate, userId),
+    encVal(form.customFields, userId),
   ]);
 
   await db.runAsync(
@@ -154,12 +185,9 @@ export const createLocalVaultItem = async (
       id, userId,
       form.title, form.categoryId, 0,
       form.iconType, form.iconValue, form.iconColor,
-      form.username ?? null, form.email ?? null,
-      encPassword, encPin,
-      form.phone ?? null, form.url ?? null,
-      encNotes, form.holderName ?? null,
-      form.expiredDate ?? null,
-      JSON.stringify(form.customFields ?? []),
+      encUsername, encEmail, encPassword, encPin,
+      encPhone, encUrl, encNotes, encHolder,
+      encExpired, encCustom,
       now, now,
     ]
   );
@@ -177,32 +205,35 @@ export const updateLocalVaultItem = async (
   const db = await getDb();
   const now = Date.now();
 
-  // Encrypt if userId provided (caller must pass it for write operations)
-  const [encPassword, encPin, encNotes] = await Promise.all([
-    form.password && userId ? encrypt(form.password, userId) : Promise.resolve(form.password ?? null),
-    form.pin && userId ? encrypt(form.pin, userId) : Promise.resolve(form.pin ?? null),
-    form.notes && userId ? encrypt(form.notes, userId) : Promise.resolve(form.notes ?? null),
+  const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
+    encNotes, encHolder, encExpired, encCustom] = await Promise.all([
+    encVal(form.username, userId ?? ""),
+    encVal(form.email, userId ?? ""),
+    encVal(form.password, userId ?? ""),
+    encVal(form.pin, userId ?? ""),
+    encVal(form.phone, userId ?? ""),
+    encVal(form.url, userId ?? ""),
+    encVal(form.notes, userId ?? ""),
+    encVal(form.holderName, userId ?? ""),
+    encVal(form.expiredDate, userId ?? ""),
+    encVal(form.customFields, userId ?? ""),
   ]);
 
   await db.runAsync(
     `UPDATE vault_items SET
       title = ?, category_id = ?,
       icon_type = ?, icon_value = ?, icon_color = ?,
-      username = ?, email = ?,
-      password = ?, pin = ?, phone = ?, url = ?,
-      notes = ?, holder_name = ?, expired_date = ?,
-      custom_fields = ?,
+      username = ?, email = ?, password = ?, pin = ?,
+      phone = ?, url = ?, notes = ?, holder_name = ?,
+      expired_date = ?, custom_fields = ?,
       local_sync_status = 'pending', updated_at = ?
      WHERE id = ?`,
     [
       form.title, form.categoryId,
       form.iconType, form.iconValue, form.iconColor,
-      form.username ?? null, form.email ?? null,
-      encPassword, encPin,
-      form.phone ?? null, form.url ?? null,
-      encNotes, form.holderName ?? null,
-      form.expiredDate ?? null,
-      JSON.stringify(form.customFields ?? []),
+      encUsername, encEmail, encPassword, encPin,
+      encPhone, encUrl, encNotes, encHolder,
+      encExpired, encCustom,
       now, id,
     ]
   );
@@ -288,18 +319,26 @@ export const upsertItemFromServer = async (
 ): Promise<void> => {
   const db = await getDb();
 
-  // Server data sudah terenkripsi → decrypt dulu
+  // Server data sudah terenkripsi → decrypt dulu untuk dapat plaintext
   const [rawPassword, rawPin, rawNotes] = await Promise.all([
     serverItem.password ? decrypt(serverItem.password, userId) : Promise.resolve(null),
     serverItem.pin ? decrypt(serverItem.pin, userId) : Promise.resolve(null),
     serverItem.notes ? decrypt(serverItem.notes, userId) : Promise.resolve(null),
   ]);
 
-  // Re-encrypt untuk local storage
-  const [encPassword, encPin, encNotes] = await Promise.all([
+  // Enkripsi semua field untuk local storage
+  const [encUsername, encEmail, encPassword, encPin, encPhone, encUrl,
+    encNotes, encHolder, encExpired, encCustom] = await Promise.all([
+    encVal(serverItem.username, userId),
+    encVal(serverItem.email, userId),
     rawPassword ? encrypt(rawPassword, userId) : Promise.resolve(null),
     rawPin ? encrypt(rawPin, userId) : Promise.resolve(null),
+    encVal(serverItem.phone, userId),
+    encVal(serverItem.url, userId),
     rawNotes ? encrypt(rawNotes, userId) : Promise.resolve(null),
+    encVal(serverItem.holder_name, userId),
+    encVal(serverItem.expired_date, userId),
+    encVal(serverItem.custom_fields, userId),
   ]);
 
   const existing = await db.getFirstAsync<any>(
@@ -319,12 +358,9 @@ export const upsertItemFromServer = async (
       [
         serverItem.title, serverItem.category_id,
         serverItem.is_favorite ? 1 : 0,
-        serverItem.username ?? null, serverItem.email ?? null,
-        encPassword, encPin, serverItem.phone ?? null,
-        serverItem.url ?? null, encNotes,
-        serverItem.holder_name ?? null,
-        serverItem.expired_date ?? null,
-        JSON.stringify(serverItem.custom_fields ?? []),
+        encUsername, encEmail, encPassword, encPin,
+        encPhone, encUrl, encNotes, encHolder,
+        encExpired, encCustom,
         new Date(serverItem.updated_at).getTime(),
         existing.id,
       ]
@@ -347,12 +383,9 @@ export const upsertItemFromServer = async (
         serverItem.icon_type ?? "emoji",
         serverItem.icon_value ?? "🔐",
         serverItem.icon_color ?? "#2563EB",
-        serverItem.username ?? null, serverItem.email ?? null,
-        encPassword, encPin, serverItem.phone ?? null,
-        serverItem.url ?? null, encNotes,
-        serverItem.holder_name ?? null,
-        serverItem.expired_date ?? null,
-        JSON.stringify(serverItem.custom_fields ?? []),
+        encUsername, encEmail, encPassword, encPin,
+        encPhone, encUrl, encNotes, encHolder,
+        encExpired, encCustom,
         "synced", 0, now,
         new Date(serverItem.updated_at).getTime(),
       ]

@@ -79,7 +79,7 @@ export const useUpdateVaultItem = () => {
 
   return useMutation({
     mutationFn: ({ id, form }: { id: string; form: VaultItemForm }) =>
-      updateLocalVaultItem(id, form),
+      updateLocalVaultItem(id, form, userId),
     onSuccess: () => { invalidateVault(); sync(); },
   });
 };
