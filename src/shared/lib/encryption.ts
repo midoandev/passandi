@@ -4,6 +4,7 @@ import * as aesjs from "aes-js";
 import { getSessionPin } from "@/shared/lib/sessionPin";
 
 const VAULT_KEY_STORE = "passandi_vault_key";
+const VAULT_KEY_DIRECT = "passandi_vault_key_direct";
 const VAULT_KEY_BIOMETRIC_STORE = "passandi_vault_key_biometric";
 
 // ── Key derivation dari PIN ───────────────────────────────────
@@ -56,12 +57,21 @@ const aesDecryptKey = async (cipherHex: string, pinKey: Uint8Array): Promise<Uin
 
 // ── Public API ────────────────────────────────────────────────
 
-/** Setup vault key for a new PIN — generate key, store encrypted with PIN */
+/** Setup vault key for a new PIN — generate key, store encrypted with PIN and raw for sync */
 export const setupVaultKey = async (pin: string): Promise<void> => {
   const vaultKey = generateVaultKey();
   const pinKey = await deriveKeyFromPin(pin);
   const encrypted = await aesEncryptKey(vaultKey, pinKey);
   await SecureStore.setItemAsync(VAULT_KEY_STORE, encrypted);
+  await SecureStore.setItemAsync(VAULT_KEY_DIRECT, aesjs.utils.hex.fromBytes(vaultKey));
+};
+
+/** Ensure direct vault key exists (called after PIN verify) */
+export const ensureDirectKey = async (pin: string): Promise<void> => {
+  const exists = await SecureStore.getItemAsync(VAULT_KEY_DIRECT);
+  if (exists) return;
+  const vaultKey = await getKeyFromPin(pin);
+  await SecureStore.setItemAsync(VAULT_KEY_DIRECT, aesjs.utils.hex.fromBytes(vaultKey));
 };
 
 /** Change PIN — decrypt vault key with old PIN, re-encrypt with new PIN */
@@ -83,11 +93,14 @@ const getKeyFromPin = async (pin: string): Promise<Uint8Array> => {
   return aesDecryptKey(encrypted, pinKey);
 };
 
-/** Get vault key — from biometric-protected storage (for biometric unlock) */
-const getKeyFromBiometric = async (): Promise<Uint8Array> => {
-  const hex = await SecureStore.getItemAsync(VAULT_KEY_BIOMETRIC_STORE);
-  if (!hex) throw new Error("Biometric vault key not found");
-  return aesjs.utils.hex.toBytes(hex);
+/** Get vault key — from direct or biometric-protected storage (for background/sync) */
+const getKeyFromDirect = async (): Promise<Uint8Array> => {
+  const hex = await SecureStore.getItemAsync(VAULT_KEY_DIRECT);
+  if (hex) return aesjs.utils.hex.toBytes(hex);
+  // Fallback ke biometric jika direct tidak ada
+  const bioHex = await SecureStore.getItemAsync(VAULT_KEY_BIOMETRIC_STORE);
+  if (!bioHex) throw new Error("Vault key not found");
+  return aesjs.utils.hex.toBytes(bioHex);
 };
 
 /** Store vault key with biometric protection */
@@ -107,6 +120,7 @@ export const disableBiometricKey = async (): Promise<void> => {
 /** Delete vault keys (on wipe) */
 export const deleteVaultKeys = async (): Promise<void> => {
   await SecureStore.deleteItemAsync(VAULT_KEY_STORE);
+  await SecureStore.deleteItemAsync(VAULT_KEY_DIRECT);
   await SecureStore.deleteItemAsync(VAULT_KEY_BIOMETRIC_STORE);
 };
 
@@ -115,7 +129,7 @@ export const deleteVaultKeys = async (): Promise<void> => {
 const getKey = async (pin?: string): Promise<Uint8Array> => {
   const sessionPin = pin ?? getSessionPin();
   if (sessionPin) return getKeyFromPin(sessionPin);
-  return getKeyFromBiometric();
+  return getKeyFromDirect();
 };
 
 const randomIV = (): Uint8Array => {
