@@ -239,7 +239,7 @@ export default {
     use_biometric: "Gunakan Biometrik",
     use_pin: "Gunakan PIN",
     biometric_prompt: "Konfirmasi identitas kamu",
-    switch_account: "Ganti Akun",
+    switch_account: "Gunakan akun lain / Logout",
   },
 
   // ── Category ────────────────────────────────────────────────

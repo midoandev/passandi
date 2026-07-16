@@ -7,6 +7,7 @@ import { AppBar } from "@/shared/ui/AppBar";
 import { SettingRow, SettingGroup } from "../components/SettingRow";
 import { OptionPickerModal } from "../components/OptionPickerModal";
 import { useSettingsStore } from "../../model/settingsStore";
+import { useIsPremium } from "@/features/premium";
 import { colors } from "@/shared/config/ThemeContext";
 import { supabase } from "@/shared/lib/supabase";
 
@@ -16,6 +17,7 @@ export function SecurityScreen() {
   const { t } = useTranslation();
   const { tokens } = useTheme();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const isPremium = useIsPremium();
 
   const {
     biometricEnabled, autoLock, clearClipboard,
@@ -78,11 +80,11 @@ export function SecurityScreen() {
         const { data: enrollment } = await supabase.auth.mfa.enroll({
           factorType: "totp",
         });
-        if (!enrollment?.totp?.qrCode) throw new Error("No QR code");
+        if (!enrollment?.totp?.qr_code) throw new Error("No QR code");
         // Tampilkan QR code atau kode setup
         Alert.alert(
           t("settings.two_factor"),
-          t("settings.two_factor_setup", { code: enrollment.totp.qrCode }),
+          t("settings.two_factor_setup", { code: enrollment.totp.qr_code }),
           [
             { text: t("common.cancel"), style: "cancel" },
             {
@@ -139,7 +141,17 @@ export function SecurityScreen() {
           title={t("settings.biometric")}
           subtitle={t("settings.biometric_sub")}
           switchValue={biometricEnabled}
-          onSwitch={setBiometric}
+          onSwitch={isPremium ? setBiometric : undefined}
+          onPress={isPremium ? undefined : () => {
+            Alert.alert(
+              t("settings.premium_feature"),
+              t("settings.premium_feature_desc"),
+              [
+                { text: t("common.cancel"), style: "cancel" },
+                { text: t("settings.upgrade"), onPress: () => router.push("/(premium)/paywall") },
+              ]
+            );
+          }}
         />
         <SettingRow
           icon="shield-half-outline"

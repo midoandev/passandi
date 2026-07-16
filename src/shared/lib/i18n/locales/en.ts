@@ -238,7 +238,7 @@ export default {
     use_biometric: "Use Biometrics",
     use_pin: "Use PIN",
     biometric_prompt: "Confirm your identity",
-    switch_account: "Switch Account",
+    switch_account: "Use another account / Logout",
   },
 
   // ── Category ────────────────────────────────────────────────
