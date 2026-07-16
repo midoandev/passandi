@@ -1,6 +1,7 @@
 import "react-native-gesture-handler";
 import "@/shared/lib/i18n";
 import { useEffect, useRef } from "react";
+import { initSentry, setUser, clearUser, logError } from "@/shared/lib/sentry";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack, router, useSegments } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -42,10 +43,12 @@ function AuthGate() {
 
       try {
         if (!session || !user) {
+          clearUser();
           if (!inAuthGroup) router.replace("/(auth)/login");
           return;
         }
 
+        setUser(user.id, user.email);
         const hasPin = await checkHasPin(user.id);
 
         if (!hasPin) {
@@ -118,13 +121,14 @@ export default function RootLayout() {
   const initSettings = useSettingsStore((s) => s.init);
 
   useEffect(() => {
+    initSentry();
     const boot = async () => {
       try {
         await getDb();        // 1. init SQLite
         await initialize();   // 2. init auth session
         await initSettings(); // 3. init settings
       } catch (e) {
-        console.error("Boot error:", e);
+        logError(e as Error, { context: "boot" });
       } finally {
         await SplashScreen.hideAsync(); // 4. hide native splash
       }
