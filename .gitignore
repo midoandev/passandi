@@ -33,6 +33,14 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Internal docs — not for public
+CLAUDE.md
+AGENTS.md
+INSTALL_TEST_DEPS.md
+PREMIUM_FEATURES.md
+TESTING.md
+_docs/
+
 # typescript
 *.tsbuildinfo
 
